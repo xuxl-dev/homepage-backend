@@ -4,25 +4,25 @@ import { ApiBearerAuth } from "@nestjs/swagger";
 import { RolesGuard } from "../roles.guard";
 
 //@authedGuards decorator, contains jwt and roles guard
-export function authedGuards(...guards: any[]) {
+export function authedGuard(...guards: any[]) {
     return applyDecorators(
         UseGuards(AuthGuard('jwt'), RolesGuard, ...guards),
         ApiBearerAuth(),
     );
 }
 
-//@unauthedGuards decorator, contains jwt guard
-export function unauthedGuards(...guards: any[]) {
+//@jwtGuards decorator, contains jwt guard
+export function jwtGuard(...guards: any[]) {
     return applyDecorators(
         UseGuards(AuthGuard('jwt'), ...guards),
     );
 }
 
 //@noGuards decorator, contains no guards
-export function noGuards() {
+export function noGuard() {
     return applyDecorators(
        
     );
 }
 
-export default {authedGuards, unauthedGuards, noGuards};
+export default {authedGuard, jwtGuard, noGuard};

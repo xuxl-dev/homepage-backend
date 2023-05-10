@@ -17,13 +17,20 @@ export class AuthController {
         // console.log('req.user', req.user);
         // console.log('login.dto', login);
 
-        return {
+        const ret = {
             jwt: await this.authService.login(req.user),
             status: 'ok',
             type: login.type,
             currentAuthority: req.user.role,
             ...req.user
         }
+
+        // TODO: 应该换成拦截器
+        if (ret.passport) {
+            delete ret.password
+        }
+
+        return ret
         // return req.user;
     }
 
