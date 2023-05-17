@@ -968,9 +968,9 @@
   dependencies:
     "@types/istanbul-lib-report" "*"
 
-"@types/jest@28.1.4":
+"@types/jest@^28.1.4":
   version "28.1.4"
-  resolved "https://registry.npmmirror.com/@types/jest/-/jest-28.1.4.tgz"
+  resolved "https://mirrors.cloud.tencent.com/npm/@types/jest/-/jest-28.1.4.tgz"
   integrity sha512-telv6G5N7zRJiLcI3Rs3o+ipZ28EnE+7EvF0pSrt2pZOMnAVI/f+6/LucDxOvcBcTeTL3JMF744BbVQAVBUQRA==
   dependencies:
     jest-matcher-utils "^28.0.0"
@@ -3403,9 +3403,9 @@ jest-worker@^28.1.3:
     merge-stream "^2.0.0"
     supports-color "^8.0.0"
 
-jest@^28.0.0, jest@28.1.2:
+jest@^28.0.0, jest@^28.1.2:
   version "28.1.2"
-  resolved "https://registry.npmmirror.com/jest/-/jest-28.1.2.tgz"
+  resolved "https://mirrors.cloud.tencent.com/npm/jest/-/jest-28.1.2.tgz"
   integrity sha512-Tuf05DwLeCh2cfWCQbcz9UxldoDyiR1E9Igaei5khjonKncYdc6LDfynKCEWozK0oLE3GD+xKAo2u8x/0s6GOg==
   dependencies:
     "@jest/core" "^28.1.2"
@@ -4773,9 +4773,9 @@ tree-kill@1.2.2:
   resolved "https://registry.npmmirror.com/tree-kill/-/tree-kill-1.2.2.tgz"
   integrity sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==
 
-ts-jest@28.0.5:
+ts-jest@^28.0.5:
   version "28.0.5"
-  resolved "https://registry.npmmirror.com/ts-jest/-/ts-jest-28.0.5.tgz"
+  resolved "https://mirrors.cloud.tencent.com/npm/ts-jest/-/ts-jest-28.0.5.tgz"
   integrity sha512-Sx9FyP9pCY7pUzQpy4FgRZf2bhHY3za576HMKJFs+OnQ9jS96Du5vNsDKkyedQkik+sEabbKAnCliv9BEsHZgQ==
   dependencies:
     bs-logger "0.x"

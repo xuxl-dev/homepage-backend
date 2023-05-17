@@ -1,8 +1,9 @@
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Geographic } from "./geographic.entity";
 import { UserAccess } from "../access.enum";
 import * as bcrypt from 'bcryptjs';
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { Attr } from "../../auth/entities/attr.entity";
 
 @Entity('user')
 export class User {
@@ -12,7 +13,7 @@ export class User {
     @Column({ nullable: true })
     avatar: string;
 
-    @Column({type: "varchar", length: 200})
+    @Column({type: "varchar", length: 200, nullable: true})
     name: string;
 
     @Column({type: "varchar", length: 200})
@@ -48,6 +49,10 @@ export class User {
 
     @Column('simple-enum', { enum: ['admin', 'user', 'visitor'] })
     role: string;
+
+    @OneToOne(() => Attr,{cascade: true, eager: true})
+    @JoinColumn()
+    attributes: Attr;
     
     @Column({type: 'json', nullable: true})
     geographic: Geographic;

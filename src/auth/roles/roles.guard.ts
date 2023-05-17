@@ -17,8 +17,6 @@ export class RolesGuard implements CanActivate {
   }
 }
 
-
-
 function matchRoles(roles: string[], role: any): boolean {
   const roleValue = RolesEnum[role];
   if (roleValue === undefined) {
