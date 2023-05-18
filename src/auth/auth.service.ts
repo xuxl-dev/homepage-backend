@@ -3,13 +3,22 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { CacheService } from '../db/redis/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-
-    logout(user: any) {
-        // do nothing
-        // jwt token is cleared in client side
+    async logout(user: any) {
+        console.log('logout');
+        await this.cacheService.destroyCache('token:', user.id);
+        return {
+            success: true,
+            data: {
+                isLogin: false,
+            },
+            code: '200',
+            message: '已登出',
+        };
     }
 
     async getUser(user: Partial<User>) {
@@ -19,10 +28,11 @@ export class AuthService {
     constructor(
         private readonly jwtService: JwtService,
         @InjectRepository(User)
-        private usersRepository: Repository<User>
+        private readonly usersRepository: Repository<User>,
+        private readonly cacheService: CacheService,
+        private readonly configService: ConfigService
     ) { }
 
-    // 生成token
     createToken(user: Partial<User>) {
         return this.jwtService.sign(user);
     }
@@ -33,7 +43,13 @@ export class AuthService {
             username: user.username,
             role: user.role,
         });
-        // console.log('token', token);
+
+        // save token to redis
+        await this.cacheService.set('token:',
+            async () => token, this.configService.get('JWT_EXPIRES_IN_SEC') ?? 86400,
+            user.id.toString()
+        );
+
         return token;
     }
 }

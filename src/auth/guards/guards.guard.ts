@@ -16,6 +16,7 @@ export function authedGuard(...guards: any[]) {
 export function jwtGuard(...guards: any[]) {
     return applyDecorators(
         UseGuards(AuthGuard('jwt'), ...guards),
+        ApiBearerAuth(),
     );
 }
 
@@ -29,6 +30,7 @@ export function noGuard() {
 export function PermissionGuard(...guards: any[]) {
     return applyDecorators(
         UseGuards(AuthGuard('jwt'), AttributeGuard, ...guards),
+        ApiBearerAuth(),
     );
 }
 

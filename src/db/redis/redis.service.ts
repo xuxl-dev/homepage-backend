@@ -11,7 +11,7 @@ export class RedisService implements OnModuleInit {
   private readonly logger = new Logger(RedisService.name)
 
   constructor(
-    private readonly configService: ConfigService,
+    configService: ConfigService,
   ) {
     this.pool = createPool(
       {

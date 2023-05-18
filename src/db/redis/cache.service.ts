@@ -10,12 +10,28 @@ export class CacheService {
         return createHash('sha1').update(fn.toString()).digest('base64')
     }
 
+
+    async set<T>(prefix:string = 'cache:', fn: () => PromiseLike<T>, ttl: number, symbol?: string) {
+        const s = prefix + (symbol || CacheService.functionHash(fn))
+        const data = await fn()
+        await this.redisService.do(e => e.setex(s, ttl, JSON.stringify(data)))
+        return data
+    }
+
+    async get<T>(prefix:string = 'cache:', symbol?: string) {
+        const s = prefix + symbol
+        const cache = await this.redisService.do(e => e.get(s))
+        if (cache === null || cache === undefined) return null
+        return JSON.parse(cache) as T
+    }
+
+
     /**
      * Destroy Cache
      * @param symbol manually assigned redis key
      */
-    async destroyCache(symbol: string) {
-        const s = 'cache:' + symbol
+    async destroyCache(prefix:string = 'cache:',symbol: string) {
+        const s = prefix + symbol
         return this.redisService.do(e => e.del(s))
     }
 
@@ -39,7 +55,7 @@ export class CacheService {
      * @param symbol manually assigned redis key
      * @param forceRefresh
      */
-    async get<T>(fn: () => PromiseLike<T>, ttl: number, symbol?: string, forceRefresh?: boolean): Promise<T> {
+    async getOrSet<T>(fn: () => PromiseLike<T>, ttl: number, symbol?: string, forceRefresh?: boolean): Promise<T> {
         if (forceRefresh) return this.forceReset(fn, ttl, symbol) as Promise<T>
         const s = 'cache:' + (symbol || CacheService.functionHash(fn))
         let cache: string | null | T = (await this.redisService.do(e => e.get(s))) as string | null
@@ -160,4 +176,6 @@ export class CacheService {
         }
         return cache
     }
+
+
 }

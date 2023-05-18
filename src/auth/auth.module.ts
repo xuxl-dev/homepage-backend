@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStorage } from './jwt.strategy';
 import { AttrsModule } from './attrs/attrs.module';
+import { CacheService } from '../db/redis/cache.service';
 
 const jwtModule = JwtModule.registerAsync({
   inject: [ConfigService],
@@ -22,7 +23,7 @@ const jwtModule = JwtModule.registerAsync({
 @Module({
   imports: [TypeOrmModule.forFeature([User]),  PassportModule, ConfigModule, jwtModule, AttrsModule],
   controllers: [AuthController],
-  providers: [AuthService, LocalStorage, JwtStorage],
+  providers: [AuthService, LocalStorage, JwtStorage, CacheService],
   exports: [jwtModule],
 })
 
