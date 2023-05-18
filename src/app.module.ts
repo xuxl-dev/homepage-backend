@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import configGenerator from './config/config';
+import { RedisModule } from './db/redis/redis.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import configGenerator from './config/config';
     }),
     UserModule,
     AuthModule,
+    RedisModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -26,9 +26,8 @@ export class AttrsController {
     return await this.attrsService.getAttr(id);
   }
 
-  @Post(':id/grant')
-  @authedGuard()
   @Roles('admin')
+  @Post(':id/grant')
   async grantAttrToUser(@Param('id') id: number, @Body() node: object){
     return await this.attrsService.grant(id, node);
   }

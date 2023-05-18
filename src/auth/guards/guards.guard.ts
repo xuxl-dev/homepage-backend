@@ -22,14 +22,14 @@ export function jwtGuard(...guards: any[]) {
 //@noGuards decorator, contains no guards
 export function noGuard() {
     return applyDecorators(
-       
+
     );
 }
 
 export function PermissionGuard(...guards: any[]) {
     return applyDecorators(
-        UseGuards(AttributeGuard, ...guards),
+        UseGuards(AuthGuard('jwt'), AttributeGuard, ...guards),
     );
 }
 
-export default {authedGuard, jwtGuard, noGuard, PermissionGuard};
+export default { authedGuard, jwtGuard, noGuard, PermissionGuard };

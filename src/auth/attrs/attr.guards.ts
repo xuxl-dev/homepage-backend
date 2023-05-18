@@ -17,9 +17,9 @@ export class AttributeGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user as User;
     const res = matchAttributes(requred_attrs, user);
-    console.log('user', user)
-    console.log('requred_attrs', requred_attrs)
-    console.log('res', res)
+    // console.log('requred_attrs', requred_attrs);
+    // console.log('user.attributes.attribute', user?.attributes?.attribute);
+    // console.log('res', res);
     return res
   }
 }
@@ -37,7 +37,9 @@ export function matchAttributes(requred_attrs: string[], usr: User): boolean {
   return true // if all nodes pass, return true
 }
 
-function getPremissionNode(user_attrs: AttrNode, levels: string[]) {
+export function getPremissionNode(user_attrs: AttrNode, levels: string[]) {
+  if(!levels) return true // if no levels, return true
+  if(!user_attrs) return false // if no user_attrs, return false
   for (const lvl of levels) {
     if (!user_attrs[lvl]) return false // unable to find required node
     if (typeof user_attrs[lvl] === 'boolean' && user_attrs[lvl]) { //is leaf and test success
@@ -48,4 +50,3 @@ function getPremissionNode(user_attrs: AttrNode, levels: string[]) {
   }
   return false // unable to find required node
 }
-
