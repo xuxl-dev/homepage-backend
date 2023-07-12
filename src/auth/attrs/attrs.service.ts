@@ -38,8 +38,8 @@ export class AttrsService {
     await this.userRepository.save(user);
   }
 
-  setAttr(user: User, attr: string[], value: boolean) {
-    let cur = user.attributes.attribute;
+  async setAttr(user: User, attr: string[], value: boolean) {
+    let cur = (await user.attributes).attribute;
     for (const node_idx in attr) {
       const node = attr[node_idx];
       if (!cur[node] && (+node_idx) !== attr.length - 1) {
@@ -59,14 +59,14 @@ export class AttrsService {
     this.setAttr(user, attr, false);
   }
 
-  async getAttr(user_id) {
-    return (await this.userService.findOne(user_id)).attributes.attribute;
+  async getAttr(user_id: number) {
+    return (await (await this.userService.findOne(user_id)).attributes).attribute;
   }
 
   // test if user has permission on node
   async ownsNode(user_id:number, node:string) {
     if (!node) return true;
-    return await getPremissionNode((await this.userService.findOne(user_id))?.attributes?.attribute, node.split('.'))
+    return getPremissionNode((await (await this.userService.findOne(user_id))?.attributes)?.attribute, node.split('.'))
   }
 }
 

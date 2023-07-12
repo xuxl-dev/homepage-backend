@@ -9,14 +9,14 @@ import { AttrNode } from '../entities/attr.entity';
 export class AttributeGuard implements CanActivate {
   constructor(private reflector: Reflector) { }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requred_attrs = this.reflector.get<string[]>(ATTR_KEY, context.getHandler());
     if (!requred_attrs) {
       return true;  // no roles required
     }
     const request = context.switchToHttp().getRequest();
     const user = request.user as User;
-    const res = matchAttributes(requred_attrs, user);
+    const res = await matchAttributes(requred_attrs, user);
     // console.log('requred_attrs', requred_attrs);
     // console.log('user.attributes.attribute', user?.attributes?.attribute);
     // console.log('res', res);
@@ -25,9 +25,9 @@ export class AttributeGuard implements CanActivate {
 }
 
 
-export function matchAttributes(requred_attrs: string[], usr: User): boolean {
-  if (!usr || !usr.attributes || !usr.attributes.attribute) return false // if user has no attributes, return false
-  const usrAttrs = usr.attributes.attribute
+export async function matchAttributes(requred_attrs: string[], usr: User): Promise<boolean> {
+  if (!usr || !usr.attributes || !(await usr.attributes).attribute) return false // if user has no attributes, return false
+  const usrAttrs = (await usr.attributes).attribute
   if (!usrAttrs) return false  // if user has no attributes, return false
   if (usrAttrs['root']) return true // if user has root attribute, return true 
   for (const required_attr of requred_attrs) {

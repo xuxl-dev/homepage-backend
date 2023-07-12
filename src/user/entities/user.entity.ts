@@ -1,6 +1,6 @@
 import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Geographic } from "./geographic.entity";
-import { UserAccess } from "../access.enum";
+// import { UserAccess } from "../access.enum";
 import * as bcrypt from 'bcryptjs';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
@@ -50,9 +50,9 @@ export class User {
     @Column('simple-enum', { enum: ['admin', 'user', 'visitor'] })
     role: string;
 
-    @OneToOne(() => Attr,{cascade: true, eager: true})
+    @OneToOne(() => Attr,{cascade: true})
     @JoinColumn()
-    attributes: Attr;
+    attributes: Promise<Attr>; 
     
     @Column({type: 'json', nullable: true})
     geographic: Geographic;

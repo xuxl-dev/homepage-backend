@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, UseGuards, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, UseInterceptors, ClassSerializerInterceptor, HttpStatus, HttpCode } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
@@ -13,6 +13,7 @@ export class AuthController {
 
     @UseGuards(AuthGuard('local'))
     @Post('login/account')
+    @HttpCode(HttpStatus.OK)
     async login(@Body() login: LoginDto, @Req() req) {
         // req.user = await this.authService.getUser(user);
         // console.log('req.user', req.user);
@@ -27,7 +28,7 @@ export class AuthController {
         }
 
         // TODO: 应该换成拦截器
-        if (ret.passport) {
+        if (ret.password) {
             delete ret.password
         }
 

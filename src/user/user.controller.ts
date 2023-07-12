@@ -44,10 +44,17 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
-  @Roles('admin')
+
+
+  @Roles('user')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Req() req) {
+    // if user is admin
+    // if user is not admin, he can only update himself
+
+    if (req.user.role in ['admin', 'sa'] || req.user.id === +id) {
+      return this.userService.update(+id, updateUserDto);
+    }
   }
 
   @Roles('admin')

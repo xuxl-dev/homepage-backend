@@ -28,7 +28,7 @@ export class UserService {
     const newUser = this.usersRepository.create(createUser)
     const attr = new Attr();
     attr.attribute = {};
-    newUser.attributes = attr;
+    newUser.attributes = Promise.resolve(attr);
 
     await this.usersRepository.save(newUser);
     return await this.usersRepository.findOne({where:{username}}) 
@@ -43,7 +43,7 @@ export class UserService {
 
     const attr = new Attr();
     attr.attribute = {};
-    user.attributes = attr;
+    user.attributes = Promise.resolve(attr);
 
     return await this.usersRepository.save(user);
   }

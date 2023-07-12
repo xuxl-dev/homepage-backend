@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
     async logout(user: any) {
-        console.log('logout');
+        // console.log('logout');
         await this.cacheService.destroyCache('token:', user.id);
         return {
             success: true,
