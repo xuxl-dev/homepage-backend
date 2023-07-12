@@ -24,9 +24,10 @@ import { SocietyModule } from './society/society.module';
           username: config.get('DB_USERNAME'),
           password: config.get('DB_PASSWORD'),
           synchronize: config.get('DB_SYNC'),
-          entities: [
-            __dirname + '/**/*.entity{.ts,.js}'
-          ], 
+          // entities: [
+          //   __dirname + '/**/*.entity{.ts,.js}'
+          // ],
+          autoLoadEntities: true,
           timezone: '+08:00',
         };
       },
