@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Geographic } from "./geographic.entity";
 // import { UserAccess } from "../access.enum";
 import * as bcrypt from 'bcryptjs';
@@ -14,8 +14,10 @@ export class User {
     avatar: string;
 
     @Column({type: "varchar", length: 200, nullable: true})
-    name: string;
+    name: string; // nickname
 
+    @Index({ unique: true })
+    @Unique('username', ['username'])
     @Column({type: "varchar", length: 200})
     username: string;
 
