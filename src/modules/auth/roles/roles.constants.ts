@@ -5,3 +5,7 @@ export enum ROLES {
   VISITOR = 'visitor',
   BANNED = 'banned',
 }
+
+export const ADMINS = [ROLES.SA, ROLES.ADMIN];
+
+export const USERS = [ROLES.SA, ROLES.ADMIN, ROLES.USER];

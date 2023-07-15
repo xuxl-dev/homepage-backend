@@ -92,12 +92,21 @@ export class UserService {
       this.register({
         username: 'admin',
         password: 'admin',
-        email: 'a@yuzhes.com'
+        email: 'admin@yuzhes.com'
       })
       Logger.debug('admin user created')
-      return 'created'
     }
-    return 'already exist'  
+
+    if (!await this.findByUsername('user')){
+      this.register({
+        username: 'user',
+        password: 'user',
+        email: 'user@yuzhes.com'
+      })
+      Logger.debug('user user created')
+    }
+
+    return 'created'  
   }
 
 }
