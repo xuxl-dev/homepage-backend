@@ -1,10 +1,9 @@
 import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Geographic } from "./geographic.entity";
-// import { UserAccess } from "../access.enum";
 import * as bcrypt from 'bcryptjs';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
-import { Comment } from "src/comment/entities/comment.entity";
+import { Comment } from "../../comment/entities/comment.entity";
 
 @Entity('user')
 export class User {

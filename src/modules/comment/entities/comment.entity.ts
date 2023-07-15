@@ -1,8 +1,8 @@
-import { TimingEntity } from "src/common/entities/timing.entity";
-import { User } from "src/user/entities/user.entity";
+import { TimingEntity } from "../../common/entities/timing.entity";
+import { User } from "../../user/entities/user.entity";
 import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CreateCommentDto } from "../dto/create-comment.dto";
-import { Fourm } from "src/fourm/entities/fourm.entity";
+import { Fourm } from "../../fourm/entities/fourm.entity";
 
 @Entity()
 export class Comment extends TimingEntity {
@@ -15,22 +15,23 @@ export class Comment extends TimingEntity {
   @Column({ nullable: true })
   displayName!: string;
 
-  @ManyToOne(() => User, (user) => user.comments, {nullable: true})
+  @ManyToOne(() => User, (user) => user.comments, { nullable: true })
   createdBy?: User;
 
-  @Column({ nullable: false,default:false })
+  @Column({ nullable: false, default: false })
   isHidden!: boolean;
 
-  @Column({ nullable: false,default:false })
+  @Column({ nullable: false, default: false })
   isDeleted!: boolean;
 
-  @ManyToOne(() => Fourm, (fourm) => fourm.comments, {nullable: true})
+  @ManyToOne(() => Fourm, (fourm) => fourm.comments, { nullable: true })
   fourm?: Fourm;
 
-  @OneToOne(() => Comment, {nullable: true})
+  @OneToOne(() => Comment, { nullable: true })
+  @JoinColumn()
   replyTo?: Comment;
 
-  public static create(content: string, displayName: string, belongsTo: Fourm, replyTo?:Comment, createdBy?: User) {
+  public static create(content: string, displayName: string, belongsTo: Fourm, replyTo?: Comment, createdBy?: User) {
     const comment = new Comment();
     comment.content = content;
     comment.displayName = displayName;

@@ -22,7 +22,7 @@ export class NoRestrictGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       request['user'] = undefined;
-      Logger.debug('No token found in request');
+      // Logger.debug('No token found in request');
     }
     try {
       const payload = await this.jwtService.verifyAsync(

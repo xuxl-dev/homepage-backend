@@ -1,5 +1,6 @@
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { authedGuard } from '../guards/guards.guard';
+import { ROLES } from './roles.constants';
 
 // export const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
@@ -14,4 +15,18 @@ export function Roles(...attrs: string[]){
     authedGuard(),
     SetAttrs(...attrs),
   );
+}
+
+/**
+ * Equivalent to \@Roles(ROLES.ADMIN)
+ */
+
+export function AdminRole() {
+  return Roles(ROLES.ADMIN);
+}
+/**
+ * Equivalent to \@Roles(ROLES.USER)
+ */
+export function UserRole() {
+  return Roles(ROLES.USER);
 }

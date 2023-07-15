@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import configGenerator from './config/config';
-import { RedisModule } from './db/redis/redis.module';
-import { SocietyModule } from './society/society.module';
-import { CommentModule } from './comment/comment.module';
-import { FourmModule } from './fourm/fourm.module';
+import { RedisModule } from './modules/db/redis/redis.module';
+import { SocietyModule } from './modules/society/society.module';
+import { CommentModule } from './modules/comment/comment.module';
+import { FourmModule } from './modules/fourm/fourm.module';
 
 @Module({
   imports: [

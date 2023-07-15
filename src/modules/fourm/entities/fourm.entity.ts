@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Comment } from "src/comment/entities/comment.entity";
+import { Comment } from "../../comment/entities/comment.entity";
 
 @Entity()
 export class Fourm {

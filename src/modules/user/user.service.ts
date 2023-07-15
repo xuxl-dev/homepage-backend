@@ -4,8 +4,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Attr } from 'src/auth/entities/attr.entity';
-import { PaginationQueryDto } from 'src/common/dtos/pagination.dto';
+import { Attr } from 'src/modules/auth/entities/attr.entity';
+import { PaginationQueryDto } from '../common/dtos/pagination.dto';
 
 @Injectable()
 export class UserService {
@@ -92,12 +92,21 @@ export class UserService {
       this.register({
         username: 'admin',
         password: 'admin',
-        email: 'a@yuzhes.com'
+        email: 'admin@yuzhes.com'
       })
       Logger.debug('admin user created')
-      return 'created'
     }
-    return 'already exist'  
+
+    if (!await this.findByUsername('user')){
+      this.register({
+        username: 'user',
+        password: 'user',
+        email: 'user@yuzhes.com'
+      })
+      Logger.debug('user user created')
+    }
+
+    return 'created'  
   }
 
 }
