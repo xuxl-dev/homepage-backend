@@ -1,9 +1,10 @@
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Geographic } from "./geographic.entity";
 // import { UserAccess } from "../access.enum";
 import * as bcrypt from 'bcryptjs';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
+import { Comment } from "src/comment/entities/comment.entity";
 
 @Entity('user')
 export class User {
@@ -14,8 +15,10 @@ export class User {
     avatar: string;
 
     @Column({type: "varchar", length: 200, nullable: true})
-    name: string;
+    name: string; // nickname
 
+    @Index({ unique: true })
+    @Unique('username', ['username'])
     @Column({type: "varchar", length: 200})
     username: string;
 
@@ -71,8 +74,12 @@ export class User {
     
     @Column({ nullable: true })
     token: string;
+
+    @OneToMany(() => Comment, comment => comment.createdBy)
+    comments: Comment[];
+
     @BeforeInsert() 
     async encryptPwd() { 
-      this.password = await bcrypt.hashSync(this.password); 
+      this.password = bcrypt.hashSync(this.password); 
     }
 }

@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import configGenerator from './config/config';
 import { RedisModule } from './db/redis/redis.module';
 import { SocietyModule } from './society/society.module';
+import { CommentModule } from './comment/comment.module';
+import { FourmModule } from './fourm/fourm.module';
 
 @Module({
   imports: [
@@ -26,8 +28,14 @@ import { SocietyModule } from './society/society.module';
           synchronize: config.get('DB_SYNC'),
           entities: [
             __dirname + '/**/*.entity{.ts,.js}'
-          ], 
+          ],
+          // autoLoadEntities: true,
           timezone: '+08:00',
+          // migrationsTableName: "migrations",
+          // migrations: ["migrations/*.ts"],
+          // cli: {
+          //   migrationsDir: "migrations"
+          // }
         };
       },
     }),
@@ -35,6 +43,8 @@ import { SocietyModule } from './society/society.module';
     AuthModule,
     RedisModule,
     SocietyModule,
+    CommentModule,
+    FourmModule,
   ],
   controllers: [AppController],
   providers: [AppService],

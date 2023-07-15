@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { jwtGuard } from './guards/guards.guard';
+import { JWTGuard } from './guards/guards.guard';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('auth')
@@ -36,14 +36,14 @@ export class AuthController {
         // return req.user;
     }
 
-    @jwtGuard()
+    @JWTGuard()
     @Post('logout')
     async logout(@Req() req) {
         return this.authService.logout(req.user);
     }
 
     
-    @jwtGuard()
+    @JWTGuard()
     @Post('profile')
     getProfile(@Req() req) {
         return req.user;
