@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException, Request, Req } from '@nestjs/common';
+import { UnauthorizedException, Request, Req, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { StrategyOptions, Strategy, ExtractJwt, JwtFromRequestFunction } from 'passport-jwt';
 import { User } from '../user/entities/user.entity';
@@ -27,8 +27,10 @@ export class JwtStorage extends PassportStrategy(Strategy) {
   }
 
   async validate(@Req() req: Request, user: Partial<User>) {
+
     const existUser = await this.authService.getUser(user);
     if (!existUser) {
+      Logger.debug(`not existUser`);
       throw new UnauthorizedException({
         data: {
           isLogin: false,
@@ -64,7 +66,6 @@ export class JwtStorage extends PassportStrategy(Strategy) {
     }
     const header_token = auth_header[1];
     if(token !== header_token) {
-      console.log('token is not match');
       throw new UnauthorizedException({
         data: {
           isLogin: false,

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,7 +11,7 @@ import { PaginationQueryDto } from 'src/common/dtos/pagination.dto';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>
+    private readonly usersRepository: Repository<User>
   ) {}
 
   
@@ -61,6 +61,10 @@ export class UserService {
     return this.usersRepository.findOne({ where: { id }});
   }
 
+  findByUsername(username: string) {
+    return this.usersRepository.findOne({ where: { username }});
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
     if (isNaN(id)) throw new HttpException('id must be a number', HttpStatus.BAD_REQUEST);
     const userexist = this.usersRepository.findOne({ where: { id }});
@@ -80,4 +84,20 @@ export class UserService {
       throw new HttpException('user not found', HttpStatus.NOT_FOUND);
     }
   }
+
+
+  async testUser() {
+    // add test users
+    if (!await this.findByUsername('admin')){
+      this.register({
+        username: 'admin',
+        password: 'admin',
+        email: 'a@yuzhes.com'
+      })
+      Logger.debug('admin user created')
+      return 'created'
+    }
+    return 'already exist'  
+  }
+
 }
