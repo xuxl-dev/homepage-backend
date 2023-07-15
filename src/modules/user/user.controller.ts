@@ -4,8 +4,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/roles/roles.decorators';
 import { noGuard, authedGuard } from '../auth/guards/guards.guard';
-import { User } from 'src/common/decorator/decorators';
-import { ROLES } from 'src/auth/roles/roles.constants';
+import { User } from '../common/decorator/decorators';
+import { ROLES } from '../../modules/auth/roles/roles.constants';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('user')

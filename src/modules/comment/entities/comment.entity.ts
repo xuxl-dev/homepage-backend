@@ -1,8 +1,8 @@
-import { TimingEntity } from "src/common/entities/timing.entity";
-import { User } from "src/user/entities/user.entity";
+import { TimingEntity } from "../../common/entities/timing.entity";
+import { User } from "../../user/entities/user.entity";
 import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CreateCommentDto } from "../dto/create-comment.dto";
-import { Fourm } from "src/fourm/entities/fourm.entity";
+import { Fourm } from "../../fourm/entities/fourm.entity";
 
 @Entity()
 export class Comment extends TimingEntity {

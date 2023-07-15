@@ -2,9 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { NoRestrict, User } from 'src/common/decorator/decorators';
-import { PaginationQueryDto } from 'src/common/dtos/pagination.dto';
-import { ExtractJwt, JWTGuard } from 'src/auth/guards/guards.guard';
+import { NoRestrict, User } from '../common/decorator/decorators';
+import { PaginationQueryDto } from '../common/dtos/pagination.dto';
+import { ExtractJwt, JWTGuard } from '../auth/guards/guards.guard';
 
 
 @Controller('comment')

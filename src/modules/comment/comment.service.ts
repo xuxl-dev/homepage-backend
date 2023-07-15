@@ -4,9 +4,9 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
-import { PaginationQueryDto } from 'src/common/dtos/pagination.dto';
-import { User } from 'src/user/entities/user.entity';
-import { Fourm } from 'src/fourm/entities/fourm.entity';
+import { PaginationQueryDto } from '../common/dtos/pagination.dto';
+import { User } from '../user/entities/user.entity';
+import { Fourm } from '../fourm/entities/fourm.entity';
 
 @Injectable()
 export class CommentService {

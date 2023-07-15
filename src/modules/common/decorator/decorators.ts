@@ -1,7 +1,7 @@
 import { SetMetadata, createParamDecorator, ExecutionContext, UseInterceptors, applyDecorators } from '@nestjs/common';
 import { TIMEOUT_KEY } from '../interceptors/interceptors.constants';
 import { TimeoutInterceptor } from '../interceptors/interceptors';
-import { User as UserType } from 'src/user/entities/user.entity';
+import { User as UserType } from '../../user/entities/user.entity';
 import { NoRestrictKey } from './decorators.contants';
 
 export const User = createParamDecorator(
