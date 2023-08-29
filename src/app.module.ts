@@ -19,6 +19,9 @@ import { ThunderModule } from './modules/thunder/thunder.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { ChatgroupModule } from './modules/chatgroup/chatgroup.module';
 import { UsermetaModule } from './modules/usermeta/usermeta.module';
+import { MailModule } from './modules/notification/mail/mail.module';
+import { QqbotModule } from './modules/notification/qqbot/qqbot.module';
+import { WechatbotModule } from './modules/notification/wechatbot/wechatbot.module';
 
 @Module({
   imports: [
@@ -63,6 +66,9 @@ import { UsermetaModule } from './modules/usermeta/usermeta.module';
     ChatModule,
     ChatgroupModule,
     UsermetaModule,
+    MailModule,
+    QqbotModule,
+    WechatbotModule,
   ],
   controllers: [AppController],
   providers: [AppService],
