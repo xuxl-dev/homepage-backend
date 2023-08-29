@@ -22,6 +22,7 @@ import { UsermetaModule } from './modules/usermeta/usermeta.module';
 import { MailModule } from './modules/notification/mail/mail.module';
 import { QqbotModule } from './modules/notification/qqbot/qqbot.module';
 import { WechatbotModule } from './modules/notification/wechatbot/wechatbot.module';
+import { WsModule } from './modules/ws/ws.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { WechatbotModule } from './modules/notification/wechatbot/wechatbot.modu
     MailModule,
     QqbotModule,
     WechatbotModule,
+    WsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

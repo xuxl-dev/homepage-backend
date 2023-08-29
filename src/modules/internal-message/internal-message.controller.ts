@@ -7,28 +7,5 @@ import { UpdateInternalMessageDto } from './dto/update-internal-message.dto';
 export class InternalMessageController {
   constructor(private readonly internalMessageService: InternalMessageService) {}
 
-  @Post()
-  create(@Body() createInternalMessageDto: CreateInternalMessageDto) {
-    return this.internalMessageService.create(createInternalMessageDto);
-  }
 
-  @Get()
-  findAll() {
-    return this.internalMessageService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.internalMessageService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInternalMessageDto: UpdateInternalMessageDto) {
-    return this.internalMessageService.update(+id, updateInternalMessageDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.internalMessageService.remove(+id);
-  }
 }

@@ -1,7 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUsermetaDto } from './dto/create-usermeta.dto';
-import { UpdateUsermetaDto } from './dto/update-usermeta.dto';
-import { CacheService } from '../db/redis/cache.service';
 import { RedisService } from '../db/redis/redis.service';
 import { UserStatus } from './entities/usermeta.entity';
 

@@ -4,23 +4,12 @@ import { UpdateInternalMessageDto } from './dto/update-internal-message.dto';
 
 @Injectable()
 export class InternalMessageService {
-  create(createInternalMessageDto: CreateInternalMessageDto) {
-    return 'This action adds a new internalMessage';
+ 
+  send(message: CreateInternalMessageDto) {
+    // check if receiver is online, 
+    // Note that even if receiver is online, it may be disconnected but not yet timeout
+    // if online, send message to receiver
+    // if offline, convert into offline message
   }
-
-  findAll() {
-    return `This action returns all internalMessage`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} internalMessage`;
-  }
-
-  update(id: number, updateInternalMessageDto: UpdateInternalMessageDto) {
-    return `This action updates a #${id} internalMessage`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} internalMessage`;
-  }
+  
 }
