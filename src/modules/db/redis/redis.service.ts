@@ -51,4 +51,66 @@ export class RedisService implements OnModuleInit {
       await this.pool.release(conn)
     }
   }
+
+  async get(key: string): Promise<string | null> {
+    return await this.do(e => e.get(key))
+  }
+
+  async set(key: string, value: string): Promise<string> {
+    return await this.do(e => e.set(key, value))
+  }
+
+  async setex(key: string, seconds: number, value: string): Promise<string> {
+    return await this.do(e => e.setex(key, seconds, value))
+  }
+
+  async del(key: string): Promise<number> {
+    return await this.do(e => e.del(key))
+  }
+
+  async incr(key: string): Promise<number> {
+    return await this.do(e => e.incr(key))
+  }
+
+  async decr(key: string): Promise<number> {
+    return await this.do(e => e.decr(key))
+  }
+
+  async expire(key: string, seconds: number): Promise<number> {
+    return await this.do(e => e.expire(key, seconds))
+  }
+
+  async ttl(key: string): Promise<number> {
+    return await this.do(e => e.ttl(key))
+  }
+
+  async exists(key: string): Promise<number> {
+    return await this.do(e => e.exists(key))
+  }
+
+  async keys(pattern: string): Promise<string[]> {
+    return await this.do(e => e.keys(pattern))
+  }
+
+  /**
+   * @deprecated
+   * @returns 
+   */
+  async flushall(): Promise<string> {
+    return await this.do(e => e.flushall())
+  }
+
+  /**
+   * @deprecated
+   * @description Delete all the keys of all the existing databases, not just the currently selected one. This command never fails.
+   * @see https://redis.io/commands/flushall
+   * @returns 
+   */
+  async flushdb(): Promise<string> {
+    return await this.do(e => e.flushdb())
+  }
+
+  async hgetall(key: string): Promise<{ [key: string]: string }> {
+    return await this.do(e => e.hgetall(key))
+  }
 }
