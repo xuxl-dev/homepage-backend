@@ -18,6 +18,7 @@ import { TaskflowModule } from './modules/taskflow/taskflow.module';
 import { ThunderModule } from './modules/thunder/thunder.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { ChatgroupModule } from './modules/chatgroup/chatgroup.module';
+import { UsermetaModule } from './modules/usermeta/usermeta.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { ChatgroupModule } from './modules/chatgroup/chatgroup.module';
     ThunderModule,
     ChatModule,
     ChatgroupModule,
+    UsermetaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
