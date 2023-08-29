@@ -56,7 +56,7 @@ export class RedisService implements OnModuleInit {
     return await this.do(e => e.get(key))
   }
 
-  async set(key: string, value: string): Promise<string> {
+  async set(key: string, value: string | number | Buffer): Promise<string> {
     return await this.do(e => e.set(key, value))
   }
 
