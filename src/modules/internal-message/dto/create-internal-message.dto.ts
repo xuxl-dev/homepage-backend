@@ -1,1 +1,3 @@
-export class CreateInternalMessageDto {}
+export class CreateInternalMessageDto {
+  receiverId: number;
+}
