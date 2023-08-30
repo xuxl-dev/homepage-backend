@@ -9,13 +9,13 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors();
 
-  const config = new DocumentBuilder()
-    .setTitle('Xlxu系统管理后台')
-    .setDescription('管理后台接口文档')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/apidoc', app, document); 
+  // const config = new DocumentBuilder()
+  //   .setTitle('Xlxu系统管理后台')
+  //   .setDescription('管理后台接口文档')
+  //   .addBearerAuth()
+  //   .build();
+  // const document = SwaggerModule.createDocument(app, config);
+  // SwaggerModule.setup('/apidoc', app, document); 
   Logger.debug('Swagger is available on: http://localhost:3000/apidoc');
   Logger.debug('Import json file from: http://localhost:3000/apidoc-json');
 
@@ -28,7 +28,7 @@ async function bootstrap() {
       }
     }
   ))
-  app.use(helmet());
+  app.use(helmet()); // for better security
 
 
   await app.listen(3000);

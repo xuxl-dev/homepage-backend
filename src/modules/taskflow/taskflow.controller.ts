@@ -7,28 +7,5 @@ import { UpdateTaskflowDto } from './dto/update-taskflow.dto';
 export class TaskflowController {
   constructor(private readonly taskflowService: TaskflowService) {}
 
-  @Post()
-  create(@Body() createTaskflowDto: CreateTaskflowDto) {
-    return this.taskflowService.create(createTaskflowDto);
-  }
 
-  @Get()
-  findAll() {
-    return this.taskflowService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.taskflowService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskflowDto: UpdateTaskflowDto) {
-    return this.taskflowService.update(+id, updateTaskflowDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.taskflowService.remove(+id);
-  }
 }

@@ -6,6 +6,7 @@ import { RedisModule } from '../db/redis/redis.module';
 @Module({
   imports: [RedisModule],
   controllers: [UsermetaController],
-  providers: [UsermetaService]
+  providers: [UsermetaService],
+  exports: [UsermetaService]
 })
 export class UsermetaModule {}
