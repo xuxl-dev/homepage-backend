@@ -2,6 +2,9 @@ import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, Conne
 import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { InternalMessage } from '../internal-message/entities/internal-message.entity';
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('SocketIoGateway')
 
 @WebSocketGateway(3001, {
   cors: true,
@@ -24,8 +27,9 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     try {
       const user = await this.socketIoService.getUserFromSocket(socket);
       socket.emit('connected', user);
+      logger.debug(`user connected: ${user.id}`);
     } catch (e) {
-      console.log(`invalid token: ${e}`);
+      logger.debug(`invalid token: ${e}`);
       socket.emit('connected', 'invalid token');
       socket.disconnect(); // invalid token
     }
@@ -41,13 +45,13 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     };
   }
 
-  @SubscribeMessage('message')
+  @SubscribeMessage('sendMessage')
   handleMessage(
     @MessageBody() data: InternalMessage,
     @ConnectedSocket() client: Socket,
   ): string {
-    console.log("Message received: " + JSON.stringify(data));
-    this.socketIoService.create(data);
+    console.log("Message sent: " + JSON.stringify(data));
+    this.socketIoService.sendMessage(data);
     return 'received';
   }
 
@@ -64,4 +68,16 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     return 'joined';
   }
 
+  @SubscribeMessage('leaveRoom')
+  handleLeaveRoom(
+    @MessageBody() data: string,
+    @ConnectedSocket() client: Socket,
+  ): string {
+    //TODO check if room exists
+    //TODO check if user is in room
+    //TODO check if user is allowed to leave room
+    console.log("Leave room: " + data);
+    this.socketIoService.leaveRoom(data, client);
+    return 'left';
+  }
 }

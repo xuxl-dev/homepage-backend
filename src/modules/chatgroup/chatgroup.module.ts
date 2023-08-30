@@ -7,6 +7,7 @@ import { Chatgroup } from './entities/chatgroup.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Chatgroup])],
   controllers: [ChatgroupController],
-  providers: [ChatgroupService]
+  providers: [ChatgroupService],
+  exports: [ChatgroupService]
 })
 export class ChatgroupModule {}
