@@ -6,7 +6,6 @@ import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
 import { PaginationQueryDto } from '../common/dtos/pagination.dto';
 import { User } from '../user/entities/user.entity';
-import { Fourm } from '../fourm/entities/fourm.entity';
 
 @Injectable()
 export class CommentService {
@@ -14,8 +13,6 @@ export class CommentService {
   constructor(
     @InjectRepository(Comment)
     private readonly commentRepository : Repository<Comment>,
-    @InjectRepository(Fourm)
-    private readonly fourmRepository : Repository<Fourm>,
     ) {}
 
   async create(createCommentDto: CreateCommentDto, user: User = undefined) {
@@ -26,7 +23,6 @@ export class CommentService {
     const comment = Comment.create(
       createCommentDto.content, 
       (user && user.username) ?? createCommentDto.displayName ?? 'Anonymous',             //用户名优先，如果没有使用displayName，如果未设置使用Anonymous
-      await this.fourmRepository.findOne({where:{id: createCommentDto.belongsTo ?? -1}}), //不能设置为undefined，会返回第一个记录
       await this.commentRepository.findOne({where:{id: createCommentDto.replyTo ?? -1}}), //不能设置为undefined，会返回第一个记录
       user);
 

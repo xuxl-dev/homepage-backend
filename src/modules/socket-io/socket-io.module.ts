@@ -3,6 +3,7 @@ import { SocketIoService } from './socket-io.service';
 import { SocketIoGateway } from './socket-io.gateway';
 
 @Module({
-  providers: [SocketIoGateway, SocketIoService]
+  providers: [SocketIoGateway, SocketIoService],
+  exports: [SocketIoService]
 })
 export class SocketIoModule {}
