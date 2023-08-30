@@ -5,7 +5,7 @@ import { NOT_IMPLEMENTED } from 'src/utils/utils';
 
 @Injectable()
 export class OfflineMessageService {
-  send(message: CreateOfflineMessageDto) {
+  sendMessageOrThrow(message: CreateOfflineMessageDto) {
     NOT_IMPLEMENTED()
   }
 }
