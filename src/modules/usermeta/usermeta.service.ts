@@ -17,6 +17,10 @@ export class UsermetaService {
     return this.redisService.set(this.prefix + userId, UserStatus.OFFLINE)
   }
 
+  setStatus(userId:number, status:UserStatus) {
+    return this.redisService.set(this.prefix + userId, status)
+  }
+
   getStatus(userId:number) {
     try {
       return +this.redisService.get(this.prefix + userId) as UserStatus

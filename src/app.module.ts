@@ -7,9 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import configGenerator from './config/config';
 import { RedisModule } from './modules/db/redis/redis.module';
-import { SocietyModule } from './modules/society/society.module';
 import { CommentModule } from './modules/comment/comment.module';
-import { FourmModule } from './modules/fourm/fourm.module';
 import { InternalMessageModule } from './modules/internal-message/internal-message.module';
 import { GroupModule } from './modules/group/group.module';
 import { OfflineMessageModule } from './modules/offline-message/offline-message.module';
@@ -22,7 +20,7 @@ import { UsermetaModule } from './modules/usermeta/usermeta.module';
 import { MailModule } from './modules/notification/mail/mail.module';
 import { QqbotModule } from './modules/notification/qqbot/qqbot.module';
 import { WechatbotModule } from './modules/notification/wechatbot/wechatbot.module';
-import { WsModule } from './modules/ws/ws.module';
+import { SocketIoModule } from './modules/socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -55,9 +53,7 @@ import { WsModule } from './modules/ws/ws.module';
     UserModule,
     AuthModule,
     RedisModule,
-    SocietyModule,
     CommentModule,
-    FourmModule,
     InternalMessageModule,
     GroupModule,
     OfflineMessageModule,
@@ -70,7 +66,7 @@ import { WsModule } from './modules/ws/ws.module';
     MailModule,
     QqbotModule,
     WechatbotModule,
-    WsModule,
+    SocketIoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
