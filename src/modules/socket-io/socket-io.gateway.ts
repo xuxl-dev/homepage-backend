@@ -3,7 +3,10 @@ import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { InternalMessage } from '../internal-message/entities/internal-message.entity';
 
-@WebSocketGateway(9502)
+@WebSocketGateway(9502, {
+  cors: true,
+  transports: ['websocket']
+})
 export class SocketIoGateway {
   @WebSocketServer()
   server: Server;

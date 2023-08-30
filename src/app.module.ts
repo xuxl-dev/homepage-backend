@@ -21,8 +21,6 @@ import { MailModule } from './modules/notification/mail/mail.module';
 import { QqbotModule } from './modules/notification/qqbot/qqbot.module';
 import { WechatbotModule } from './modules/notification/wechatbot/wechatbot.module';
 import { SocketIoModule } from './modules/socket-io/socket-io.module';
-import { SocketIoGateway } from './modules/socket-io/socket-io.gateway';
-import { SocioGateway } from './socio/socio.gateway';
 
 @Module({
   imports: [
@@ -71,6 +69,6 @@ import { SocioGateway } from './socio/socio.gateway';
     SocketIoModule,
   ],
   controllers: [AppController],
-  providers: [AppService, SocketIoGateway, SocioGateway],
+  providers: [AppService],
 })
 export class AppModule {}
