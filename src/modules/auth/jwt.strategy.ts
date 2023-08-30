@@ -84,4 +84,5 @@ export class JwtStorage extends PassportStrategy(Strategy) {
 
     return existUser;
   }
+
 }

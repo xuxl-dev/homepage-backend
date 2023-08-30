@@ -1,20 +1,34 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit } from '@nestjs/websockets';
 import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { InternalMessage } from '../internal-message/entities/internal-message.entity';
 
-@WebSocketGateway(9502, {
+@WebSocketGateway(3001, {
   cors: true,
   transports: ['websocket']
 })
-export class SocketIoGateway {
+export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly socketIoService: SocketIoService) {
-    console.log("SocketIoGateway constructor");
-    console.log("SocketIo running");
+  constructor(
+    private readonly socketIoService: SocketIoService,
+  ) {}
 
+  afterInit(server: any) {
+  }
+  handleDisconnect(client: any) {
+  }
+
+  async handleConnection(socket: Socket) {
+    try {
+      const user = await this.socketIoService.getUserFromSocket(socket);
+      socket.emit('connected', user);
+    } catch (e) {
+      console.log(`invalid token: ${e}`);
+      socket.emit('connected', 'invalid token');
+      socket.disconnect(); // invalid token
+    }
   }
 
   @SubscribeMessage('events')
@@ -26,7 +40,7 @@ export class SocketIoGateway {
       data
     };
   }
-  
+
   @SubscribeMessage('message')
   handleMessage(
     @MessageBody() data: InternalMessage,
@@ -36,7 +50,7 @@ export class SocketIoGateway {
     this.socketIoService.create(data);
     return 'received';
   }
-  
+
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
     @MessageBody() data: string,
