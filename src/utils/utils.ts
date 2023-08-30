@@ -8,17 +8,17 @@ export function randomInt(min: number, max: number) {
 
 /**
  * Note that this will capture the stack trace of the caller
- * @param action 
+ * @param actionFactory 
  * @param ms 
  * @returns 
  */
-export function timeout<T>(action: Promise<T>, ms: number): Promise<T> {
+export function timeout<T>(actionFactory: () => Promise<T>, ms: number): Promise<T> {
   const stackTrace = new Error().stack;  // This is used for better debugging
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       reject(new Error(`Timeout after ${ms}ms at \n ${stackTrace}`))
     }, ms)
-    action.then((result) => {
+    actionFactory().then((result) => {
       resolve(result)
     }).catch((err) => {
       reject(err)
@@ -26,16 +26,26 @@ export function timeout<T>(action: Promise<T>, ms: number): Promise<T> {
   })
 }
 
-export function timeoutWith<T>(action: Promise<T>, ms: number, defaultValue: T): Promise<T> {
+export function timeoutWith<T>(actionFactory: () => Promise<T>, ms: number, fallback: T): Promise<T> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      resolve(defaultValue)
+      resolve(fallback)
     }, ms)
-    action.then((result) => {
+    actionFactory().then((result) => {
       resolve(result)
     }).catch((err) => {
       reject(err)
     })
+  })
+}
+
+export function asPromise<T>(actionFactory: () => T): Promise<T> {
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(actionFactory())
+    } catch (err) {
+      reject(err)
+    }
   })
 }
 
@@ -59,6 +69,20 @@ export function backOff<T>(actionFactory:() => Promise<T>, ms: number, maxRetrie
     }
     retry()
   })
+}
+
+export class TimeoutError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "TimeoutError";
+  }
+}
+
+export class MaxBackOffError extends Error {
+  constructor(inner?: Error) { 
+    super();
+    this.name = "MaxBackOffError";
+  }
 }
 
 export function NOT_IMPLEMENTED() {
