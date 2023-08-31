@@ -6,7 +6,7 @@ export enum ACKMessageType {
   READ,       //已读
 }
 
-class ACKMessage extends OmitType(InternalMessage, ['content']) {
+export class ACKMessage extends OmitType(InternalMessage, ['content']) {
   type: ACKMessageType;
   ackMsgId: number;
 }

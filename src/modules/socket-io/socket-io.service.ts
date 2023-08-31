@@ -24,7 +24,7 @@ export class SocketIoService {
 
   @WebSocketServer()
   io: Server;
-  
+
   /**
    * send message to one user, this is safe to send to offline user
    * if it is offline, an error will be thrown
@@ -65,6 +65,14 @@ export class SocketIoService {
 
   async getUserFromSocket(socket: Socket) {
     return await this.authService.getUserByToken(this.getJwtTokenFromSocket(socket));
+  }
+
+  addSocket(id: number, socket: Socket) {
+    this.socketManager.set(id, socket)
+  }
+
+  removeSocket(id: number) {
+    this.socketManager.delete(id);
   }
 
 }

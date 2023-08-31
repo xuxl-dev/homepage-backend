@@ -1,1 +1,2 @@
-export const sendMessageToken = 'sendMessage';
+export const receiveMessageToken = 'receiveMessage';
+export const sendACKToken = 'sendACK';
