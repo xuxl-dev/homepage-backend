@@ -51,7 +51,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
   ): string {
     console.log("Message sent: " + JSON.stringify(data));
-    this.socketIoService.sendMessage(data);
+    this.socketIoService.sendMessageOrThrow(data);
     return 'received';
   }
 

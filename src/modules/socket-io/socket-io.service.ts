@@ -8,7 +8,7 @@ import { ChatgroupService } from '../chatgroup/chatgroup.service';
 import { BrocastMessage, InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
-import { sendMessageOrThrow } from './utils';
+import { sendMessageOrThrow as backOffSendMsgOrThrow } from './utils';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -27,25 +27,17 @@ export class SocketIoService {
   io: Server;
   
   /**
-   * send message to one user
+   * send message to one user, this is safe to send to offline user
+   * if it is offline, an error will be thrown
    * @param message 
    */
-  sendMessage(message: InternalMessage) {
+  async sendMessageOrThrow(message: InternalMessage) {
     const socket = this.socketManager.getSocket(message.receiverId);
     if (socket) {
       try {
-        sendMessageOrThrow(socket, message);
+        await backOffSendMsgOrThrow(socket, message);
       } catch (e) {
-        // convert to offline message
-        // TODO implement offline message
-        try {
-          this.offlineMessageService.sendMessageOrThrow(message);
-        } catch (e) {
-          // this shall never happen
-          // but if it does, we have a problem
-          logger.fatal(`failed to send message: ${e}`);
-          throw new Error('failed to send message');
-        }
+        throw e
       }
     } else {
       throw new Error('socket not found');

@@ -1,3 +1,5 @@
+import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
+
 export class InternalMessage {
   msgId: number;
 
@@ -5,6 +7,13 @@ export class InternalMessage {
   receiverId: number;
 
   content: string;
+
+  constructor(createInternalMsgDto: CreateInternalMessageDto) {
+    this.senderId = createInternalMsgDto.senderId;
+    this.receiverId = createInternalMsgDto.receiverId;
+    this.content = createInternalMsgDto.content;
+  }
+
 } //actually this is a special case of BroadcastMessage
 
 
