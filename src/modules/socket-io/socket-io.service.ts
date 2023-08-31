@@ -20,7 +20,6 @@ export class SocketIoService {
   constructor(
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
-    private readonly offlineMessageService: OfflineMessageService,
   ) { }
 
   @WebSocketServer()
