@@ -4,6 +4,7 @@ import { OfflineMessageController } from './offline-message.controller';
 
 @Module({
   controllers: [OfflineMessageController],
-  providers: [OfflineMessageService]
+  providers: [OfflineMessageService],
+  exports: [OfflineMessageService]
 })
 export class OfflineMessageModule {}

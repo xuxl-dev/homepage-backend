@@ -3,6 +3,7 @@ import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { InternalMessage } from '../internal-message/entities/internal-message.entity';
 import { Logger } from '@nestjs/common';
+import { ACKMessage } from '../internal-message/entities/ack-message.entity';
 
 const logger = new Logger('SocketIoGateway')
 
@@ -18,15 +19,21 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     private readonly socketIoService: SocketIoService,
   ) {}
 
-  afterInit(server: any) {
+  afterInit(server) {
   }
-  handleDisconnect(client: any) {
+  handleDisconnect(client) {
+    logger.debug(`user disconnected: ${client.user.id}`);
+    this.socketIoService.removeSocket(client.user.id);
   }
 
   async handleConnection(socket: Socket) {
     try {
       const user = await this.socketIoService.getUserFromSocket(socket);
-      socket.emit('connected', user);
+      socket.emit('connected', user, (val: any) => {
+        logger.debug(`connected ack received: ${val}`);
+      });
+      socket.user = user
+      this.socketIoService.addSocket(user.id, socket);
       logger.debug(`user connected: ${user.id}`);
     } catch (e) {
       logger.debug(`invalid token: ${e}`);
@@ -51,8 +58,15 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
   ): string {
     console.log("Message sent: " + JSON.stringify(data));
-    this.socketIoService.sendMessage(data);
+    this.socketIoService.sendMessageOrThrow(data);
     return 'received';
+  }
+
+  @SubscribeMessage('ackMessage')
+  handleAckMessage(
+    @MessageBody() data: ACKMessage,
+    @ConnectedSocket() client: Socket){
+    console.log("Message ack: " + JSON.stringify(data));
   }
 
   @SubscribeMessage('joinRoom')
