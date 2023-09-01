@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { Messenger } from "./messenger";
 
 /**
  * SocketManager
@@ -8,10 +9,10 @@ import { Socket } from "socket.io";
  */
 export class SocketManager {
 
-  private static _instance: SocketManager = new SocketManager();
+  private static _instance: SocketManager = new SocketManager()
 
   public static instance() {
-    return this._instance;
+    return this._instance
   }
 
   private constructor() { }
@@ -19,35 +20,37 @@ export class SocketManager {
   /**
    * Map from user id to socket id
    */
-  private userToSocketMap : Map<number, Socket> = new Map();
+  private userToMessengerMap : Map<number, Messenger> = new Map()
 
   /**
    * Map from socket id to user id
    */
 
-  private socketToUserMap : Map<Socket, number> = new Map();
+  private messengerToUserMap : Map<Messenger, number> = new Map()
 
   set(user: number, socket: Socket) {
-    this.userToSocketMap.set(user, socket);
-    this.socketToUserMap.set(socket, user);
+    const messgener = new Messenger(socket)
+    socket.messenger = messgener
+    this.userToMessengerMap.set(user, messgener)
+    this.messengerToUserMap.set(messgener, user)
   }
 
   delete(user: number) {
-    const socket = this.userToSocketMap.get(user);
-    this.userToSocketMap.delete(user);
-    this.socketToUserMap.delete(socket);
+    const socket = this.userToMessengerMap.get(user)
+    this.userToMessengerMap.delete(user)
+    this.messengerToUserMap.delete(socket)
   }
 
   clear() {
-    this.userToSocketMap.clear();
-    this.socketToUserMap.clear();
+    this.userToMessengerMap.clear()
+    this.messengerToUserMap.clear()
   }
 
   getSocket(user: number) {
-    return this.userToSocketMap.get(user);
+    return this.userToMessengerMap.get(user)._socket
   }
 
-  getUser(socket: Socket) {
-    return this.socketToUserMap.get(socket);
+  getMessenger(user: number) {
+    return this.userToMessengerMap.get(user)
   }
 }

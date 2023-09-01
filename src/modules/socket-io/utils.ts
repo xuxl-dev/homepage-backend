@@ -1,5 +1,5 @@
 import { timeout, backOff, asPromise } from "src/utils/utils";
-import { receiveMessageToken, sendACKToken } from "./Tokens";
+import { MessagingToken, ACKToken } from "./Tokens";
 import { Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { InternalMessage } from "../internal-message/entities/internal-message.entity";
@@ -19,16 +19,16 @@ export async function sendMessageOrThrow(socket: Socket, message: InternalMessag
   return new Promise<void>((resolve, reject) => {
     let ackTimeout: string | number | NodeJS.Timeout
     const sendActionFactoryAsync = async () => {
-      socket.emit(receiveMessageToken, message)
+      socket.emit(MessagingToken, message)
       // blocked wait for ack
       await new Promise<void>((resolve, reject) => {
-        socket.once(sendACKToken, (ack: ACKMessage) => { //refactor this, this is resouce consuming
+        socket.once(ACKToken, (ack: ACKMessage) => { //refactor this, this is resouce consuming
           logger.debug(`message ack received: ${ack}`)
           clearTimeout(ackTimeout)
           resolve()
         });
         ackTimeout = setTimeout(() => {
-          socket.removeAllListeners(sendACKToken) //check if this is correct
+          socket.removeAllListeners(ACKToken) //check if this is correct
           reject(new Error('ack timeout'))
         }, maxAckTimeout);
       })

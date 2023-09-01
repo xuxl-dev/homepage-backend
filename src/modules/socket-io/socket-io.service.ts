@@ -31,15 +31,19 @@ export class SocketIoService {
    * @param message 
    */
   async sendMessageOrThrow(message: InternalMessage) {
-    const socket = this.socketManager.getSocket(message.receiverId);
-    if (socket) {
-      try {
-        await backOffSendMsgOrThrow(socket, message);
-      } catch (e) {
-        throw e
-      }
-    } else {
-      throw new Error('socket not found');
+    // const socket = this.socketManager.getSocket(message.receiverId);
+    // if (socket) {
+    //   try {
+    //     await backOffSendMsgOrThrow(socket, message);
+    //   } catch (e) {
+    //     throw e
+    //   }
+    // } else {
+    //   throw new Error('socket not found');
+    // }
+    const messenger = this.socketManager.getMessenger(message.receiverId);
+    if (messenger) {
+      messenger.sendMessageWithTimeout(message, 3000);
     }
   }
 
