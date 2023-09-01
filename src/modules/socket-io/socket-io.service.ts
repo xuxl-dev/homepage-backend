@@ -8,9 +8,10 @@ import { ChatgroupService } from '../chatgroup/chatgroup.service';
 import { BrocastMessage, InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
-import { sendMessageOrThrow as backOffSendMsgOrThrow } from './utils';
+// import { sendMessageOrThrow as backOffSendMsgOrThrow } from './utils';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 import { UserOfflineException } from '../internal-message/internal-message.service';
+import { ACKMessage } from '../internal-message/entities/ack-message.entity';
 const logger = new Logger('SocketIoService')
 @Injectable()
 export class SocketIoService {
@@ -44,7 +45,7 @@ export class SocketIoService {
     // }
     const messenger = this.socketManager.getMessenger(message.receiverId);
     if (messenger) {
-      messenger.sendMessageWithTimeout(message, 3000);
+      await messenger.sendMessageWithTimeout(message, 3000);
     } else {
       throw new UserOfflineException();
     }

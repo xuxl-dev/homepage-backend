@@ -3,13 +3,18 @@ import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { InternalMessage } from '../internal-message/entities/internal-message.entity';
 import { Logger } from '@nestjs/common';
-import { ACKMessage } from '../internal-message/entities/ack-message.entity';
+import { ACKMessage, ACKMessageType } from '../internal-message/entities/ack-message.entity';
+import { messageToken } from './Tokens';
+import { Snowflake } from './utils';
 
 const logger = new Logger('SocketIoGateway')
 
+const workerId = 1; // 机器 ID
+const dataCenterId = 1; // 数据中心 ID
+const snowflake = new Snowflake(workerId, dataCenterId);
+
 @WebSocketGateway(3001, {
   cors: true,
-  transports: ['websocket']
 })
 export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
@@ -27,6 +32,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   async handleConnection(socket: Socket) {
+    console.log("Connection received");
     try {
       const user = await this.socketIoService.getUserFromSocket(socket);
       socket.emit('connected', user, (val: any) => {
@@ -52,14 +58,20 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     };
   }
 
-  @SubscribeMessage('sendMessage')
+  @SubscribeMessage(messageToken)
   handleMessage(
     @MessageBody() data: InternalMessage,
     @ConnectedSocket() client: Socket,
-  ): string {
+  ) {
     console.log("Message sent: " + JSON.stringify(data));
     this.socketIoService.sendMessageOrThrow(data);
-    return 'received';
+    return new ACKMessage(
+      snowflake.nextId(),
+      data.msgId,
+      -1,
+      data.receiverId,
+      ACKMessageType.SERVER_RECEIVED
+    );
   }
 
   @SubscribeMessage('ackMessage')

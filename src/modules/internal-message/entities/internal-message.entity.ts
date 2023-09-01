@@ -1,7 +1,9 @@
 import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
 
+export type MsgId = string;
+
 export class InternalMessage {
-  msgId: number;
+  msgId: MsgId;
 
   senderId: number;
   receiverId: number;
