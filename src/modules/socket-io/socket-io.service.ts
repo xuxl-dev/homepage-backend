@@ -10,6 +10,7 @@ import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
 import { sendMessageOrThrow as backOffSendMsgOrThrow } from './utils';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
+import { UserOfflineException } from '../internal-message/internal-message.service';
 const logger = new Logger('SocketIoService')
 @Injectable()
 export class SocketIoService {
@@ -44,6 +45,8 @@ export class SocketIoService {
     const messenger = this.socketManager.getMessenger(message.receiverId);
     if (messenger) {
       messenger.sendMessageWithTimeout(message, 3000);
+    } else {
+      throw new UserOfflineException();
     }
   }
 
