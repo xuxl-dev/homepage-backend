@@ -6,12 +6,10 @@ import { Logger } from '@nestjs/common';
 import { ACKMessage, ACKMessageType } from '../internal-message/entities/ack-message.entity';
 import { messageToken } from './Tokens';
 import { Snowflake } from './utils';
+import { CreateInternalMessageDto } from '../internal-message/dto/create-internal-message.dto';
+import { snowflake } from './snowflake';
 
 const logger = new Logger('SocketIoGateway')
-
-const workerId = 1; // 机器 ID
-const dataCenterId = 1; // 数据中心 ID
-const snowflake = new Snowflake(workerId, dataCenterId);
 
 @WebSocketGateway(3001, {
   cors: true,
@@ -60,25 +58,18 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   @SubscribeMessage(messageToken)
   handleMessage(
-    @MessageBody() data: InternalMessage,
+    @MessageBody() data: CreateInternalMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log("Message sent: " + JSON.stringify(data));
-    this.socketIoService.sendMessageOrThrow(data);
+    const message = new InternalMessage(data);
+    console.log("Message sent: " + JSON.stringify(message));
+    this.socketIoService.sendMessageOrThrow(message);
     return new ACKMessage(
-      snowflake.nextId(),
-      data.msgId,
+      message.msgId,
       -1,
-      data.receiverId,
+      message.receiverId,
       ACKMessageType.SERVER_RECEIVED
     );
-  }
-
-  @SubscribeMessage('ackMessage')
-  handleAckMessage(
-    @MessageBody() data: ACKMessage,
-    @ConnectedSocket() client: Socket){
-    console.log("Message ack: " + JSON.stringify(data));
   }
 
   @SubscribeMessage('joinRoom')

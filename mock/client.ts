@@ -21,7 +21,7 @@ socket.on('message', (message) => {
   console.log('Received message:', message);
 
   socket.emit('ack', {
-    "msgId": message.msgId + 1000,
+    "msgId":  message.msgId + 1000,
     "senderId":2,
     "receiverId":1,
     "content":"123",
@@ -32,7 +32,7 @@ socket.on('message', (message) => {
   //wait for 3 seconds
   setTimeout(() => {
     socket.emit('ack', {
-      "msgId": message.msgId + 1000,
+      "msgId": message.msgId + 1001,
       "senderId":2,
       "receiverId":1,
       "content":"123",
@@ -52,14 +52,13 @@ socket.on('disconnect', () => {
 });
 
 socket.on('connect_error', (error) => {
-  console.error('Connection error:', error);
+  console.error('Connection error:', error.message);
+  console.log('retrying...');
 });
 
 console.log('Connecting to server...');
 try {
   socket.connect();
-  console.log('is connected', socket.connected);
 } catch (error) {
   console.error(error);
 }
-console.log('Connected to server');

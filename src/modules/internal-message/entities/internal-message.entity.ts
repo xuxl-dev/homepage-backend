@@ -1,19 +1,21 @@
+import { snowflake } from "src/modules/socket-io/snowflake";
 import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
 
 export type MsgId = string;
 
 export class InternalMessage {
-  msgId: MsgId;
+  msgId: MsgId
 
-  senderId: number;
-  receiverId: number;
+  senderId: number
+  receiverId: number
 
-  content: string;
+  content: string
 
   constructor(createInternalMsgDto: CreateInternalMessageDto) {
-    this.senderId = createInternalMsgDto.senderId;
-    this.receiverId = createInternalMsgDto.receiverId;
-    this.content = createInternalMsgDto.content;
+    this.msgId = snowflake.nextId()
+    this.senderId = createInternalMsgDto.senderId
+    this.receiverId = createInternalMsgDto.receiverId
+    this.content = createInternalMsgDto.content
   }
 
 } //actually this is a special case of BroadcastMessage
