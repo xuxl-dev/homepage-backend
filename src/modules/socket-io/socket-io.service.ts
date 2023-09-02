@@ -5,7 +5,7 @@ import { WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { ChatgroupService } from '../chatgroup/chatgroup.service';
-import { BrocastMessage, InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
+import { BroadcastMessage, InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
 // import { sendMessageOrThrow as backOffSendMsgOrThrow } from './utils';
@@ -33,16 +33,6 @@ export class SocketIoService {
    * @param message 
    */
   async sendMessageOrThrow(message: InternalMessage) {
-    // const socket = this.socketManager.getSocket(message.receiverId);
-    // if (socket) {
-    //   try {
-    //     await backOffSendMsgOrThrow(socket, message);
-    //   } catch (e) {
-    //     throw e
-    //   }
-    // } else {
-    //   throw new Error('socket not found');
-    // }
     const messenger = this.socketManager.getMessenger(message.receiverId);
     if (messenger) {
       await messenger.sendMessageWithTimeout(message, 3000);

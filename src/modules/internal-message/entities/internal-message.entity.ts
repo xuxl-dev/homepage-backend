@@ -23,7 +23,7 @@ export class InternalMessage {
 
 
 
-export class BrocastMessage {
+export class BroadcastMessage {
   msgId: number;
 
   senderId: number;

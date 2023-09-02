@@ -8,7 +8,7 @@ enum ACKMessageType {
 const socket = io('http://127.0.0.1:3001', {
   port: 3001,
   extraHeaders: {
-    authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTM1NDkwNDksImV4cCI6MTY5MzYzNTQ0OX0.ur1wm0RqxTLBt7Oqg_XMP6LL0aVHn1Dr-M9fyprj9K4',
+    authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTM2NDM4MjUsImV4cCI6MTY5NjIzNTgyNX0.06GcsLzucY1ZnreidSDjmu-AwRRJzB1OjGPkZxfsL0A',
   },
   autoConnect: true,
 });
@@ -57,8 +57,9 @@ socket.on('connect_error', (error) => {
 });
 
 console.log('Connecting to server...');
+
 try {
-  socket.connect();
+  socket.connect()
 } catch (error) {
-  console.error(error);
+  console.error(error)
 }
