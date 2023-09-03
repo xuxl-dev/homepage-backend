@@ -8,6 +8,14 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    private readonly jwtService: JwtService,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    private readonly cacheService: CacheService,
+    private readonly configService: ConfigService
+  ) { }
+
   async logout(user: any) {
     // console.log('logout');
     await this.cacheService.destroyCache('token:', user.id);
@@ -22,16 +30,8 @@ export class AuthService {
   }
 
   async getUser(user: Partial<User>) {
-    return await this.usersRepository.findOne({ where: { id: user.id } });
+    return await this.usersRepository.findOneOrFail({ where: { id: user.id } });
   }
-
-  constructor(
-    private readonly jwtService: JwtService,
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-    private readonly cacheService: CacheService,
-    private readonly configService: ConfigService
-  ) { }
 
   createToken(user: Partial<User>) {
     return this.jwtService.sign(user);

@@ -8,7 +8,7 @@ enum ACKMessageType {
 const socket = io('http://127.0.0.1:3001', {
   port: 3001,
   extraHeaders: {
-    authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTM1NDkwNDksImV4cCI6MTY5MzYzNTQ0OX0.ur1wm0RqxTLBt7Oqg_XMP6LL0aVHn1Dr-M9fyprj9K4',
+    authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTM2NDM4MjUsImV4cCI6MTY5NjIzNTgyNX0.06GcsLzucY1ZnreidSDjmu-AwRRJzB1OjGPkZxfsL0A',
   },
   autoConnect: true,
 });
@@ -21,7 +21,7 @@ socket.on('message', (message) => {
   console.log('Received message:', message);
 
   socket.emit('ack', {
-    "msgId": message.msgId + 1000,
+    "msgId":  message.msgId + 1000,
     "senderId":2,
     "receiverId":1,
     "content":"123",
@@ -32,7 +32,7 @@ socket.on('message', (message) => {
   //wait for 3 seconds
   setTimeout(() => {
     socket.emit('ack', {
-      "msgId": message.msgId + 1000,
+      "msgId": message.msgId + 1001,
       "senderId":2,
       "receiverId":1,
       "content":"123",
@@ -52,14 +52,14 @@ socket.on('disconnect', () => {
 });
 
 socket.on('connect_error', (error) => {
-  console.error('Connection error:', error);
+  console.error('Connection error:', error.message);
+  console.log('retrying...');
 });
 
 console.log('Connecting to server...');
+
 try {
-  socket.connect();
-  console.log('is connected', socket.connected);
+  socket.connect()
 } catch (error) {
-  console.error(error);
+  console.error(error)
 }
-console.log('Connected to server');

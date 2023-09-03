@@ -27,14 +27,18 @@ export class Messenger {
       if (!response) {
         throw new Error('Invalid message received') //TODO: add more validation
       }
-      const msgId = response.ackMsgId
-      console.log('ACK Message received for msg: ', msgId, 'from ', response.senderId, 'to', response.receiverId)
-      if (this.pendingMessages.has(msgId)) {
-        const { resolve } = this.pendingMessages.get(msgId)
-        this.pendingMessages.delete(msgId)
+      const { msgId, senderId, receiverId, type, ackMsgId }= response
+      console.log(
+        'ACK Message received for msg: ', ackMsgId, 
+        'from ', senderId, 
+        'to', receiverId, 
+        'type', ACKMessageType[type])
+      if (this.pendingMessages.has(ackMsgId)) {
+        const { resolve } = this.pendingMessages.get(ackMsgId)
+        this.pendingMessages.delete(ackMsgId)
         resolve(response)
       }
-      const sender = this.socketManager.getSocket(response.receiverId);
+      const sender = this.socketManager.getSocket(receiverId);
       if (sender) {
         sender.emit('ack', response);
       }
@@ -43,7 +47,7 @@ export class Messenger {
     }
   }
 
-  sendMessageWithTimeout(message: InternalMessage, timeout: number = 1000): Promise<ACKMessage> {
+  sendMessageWithTimeout(message: InternalMessage, timeout: number = 3000): Promise<ACKMessage> {
     return new Promise<ACKMessage>((resolve, reject) => {
       setTimeout(() => {
         this.pendingMessages.delete(message.msgId)
