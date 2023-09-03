@@ -6,7 +6,7 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 @Entity()
 export class Chatgroup {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Index()
   @Column()

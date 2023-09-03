@@ -68,6 +68,9 @@ dependencies:
   class-validator:
     specifier: ^0.13.2
     version: 0.13.2
+  generic-pool:
+    specifier: ^3.9.0
+    version: 3.9.0
   helmet:
     specifier: ^7.0.0
     version: 7.0.0
