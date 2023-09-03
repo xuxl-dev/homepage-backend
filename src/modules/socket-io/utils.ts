@@ -76,7 +76,7 @@ export class Snowflake {
     this.dataCenterId = dataCenterId;
   }
 
-  public nextId(): string {
+  public nextId(): bigint {
     let timestamp = this.timeGen();
 
     if (timestamp < this.lastTimestamp) {
@@ -99,7 +99,7 @@ export class Snowflake {
       (this.dataCenterId << Snowflake.workerIdBits) |
       this.workerId;
 
-    return id.toString();
+    return BigInt(id);
   }
 
   private tilNextMillis(lastTimestamp: number): number {

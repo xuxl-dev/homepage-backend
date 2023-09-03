@@ -1,19 +1,25 @@
 import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
 
-export type MsgId = string;
-
+export type MsgId = bigint;
+export type MessengerId = userId | groupId;
+export type userId = number;
+export type groupId = number;
 export class InternalMessage {
-  msgId: MsgId;
+  msgId: MsgId
 
-  senderId: number;
-  receiverId: number;
+  senderId: MessengerId
 
-  content: string;
+  receiverId: MessengerId
 
+  content: string
+
+  sentAt: number  // timestamp
+                  // timezone is not processed here
   constructor(createInternalMsgDto: CreateInternalMessageDto) {
-    this.senderId = createInternalMsgDto.senderId;
-    this.receiverId = createInternalMsgDto.receiverId;
-    this.content = createInternalMsgDto.content;
+    this.senderId = createInternalMsgDto.senderId
+    this.receiverId = createInternalMsgDto.receiverId
+    this.content = createInternalMsgDto.content
+    this.sentAt = Date.now()
   }
 
 } //actually this is a special case of BroadcastMessage
@@ -22,26 +28,26 @@ export class InternalMessage {
 
 
 export class BrocastMessage {
-  msgId: number;
+  msgId: number
 
-  senderId: number;
+  senderId: number
   /**
    * GroupId is the id of the chatgroup, not socketio room
    * socketio room contains only online users
    */
-  groupId: number;
+  groupId: number
 
-  content: string;
+  content: string
 }
 /**
  * Note that this will be sent to all users in the chatgroup
  * But these is not online will not receive it
  */
 export class MultiCastMessage {
-  msgId: number;
+  msgId: number
 
-  senderId: number;
-  groupIds: number[];
+  senderId: number
+  groupIds: number[]
 
-  content: string;
+  content: string
 }

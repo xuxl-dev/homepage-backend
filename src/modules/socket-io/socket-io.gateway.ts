@@ -32,7 +32,6 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   async handleConnection(socket: Socket) {
-    console.log("Connection received");
     try {
       const user = await this.socketIoService.getUserFromSocket(socket);
       socket.emit('connected', user, (val: any) => {

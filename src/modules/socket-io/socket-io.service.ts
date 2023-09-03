@@ -12,6 +12,7 @@ import { SocketManager } from './socket-mamager';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 import { UserOfflineException } from '../internal-message/internal-message.service';
 import { ACKMessage } from '../internal-message/entities/ack-message.entity';
+import { User } from '../user/entities/user.entity';
 const logger = new Logger('SocketIoService')
 @Injectable()
 export class SocketIoService {
@@ -22,6 +23,7 @@ export class SocketIoService {
   constructor(
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
+    private readonly offlineMessageService: OfflineMessageService,
   ) { }
 
   @WebSocketServer()
@@ -33,21 +35,24 @@ export class SocketIoService {
    * @param message 
    */
   async sendMessageOrThrow(message: InternalMessage) {
-    // const socket = this.socketManager.getSocket(message.receiverId);
-    // if (socket) {
-    //   try {
-    //     await backOffSendMsgOrThrow(socket, message);
-    //   } catch (e) {
-    //     throw e
-    //   }
-    // } else {
-    //   throw new Error('socket not found');
-    // }
     const messenger = this.socketManager.getMessenger(message.receiverId);
     if (messenger) {
       await messenger.sendMessageWithTimeout(message, 3000);
     } else {
       throw new UserOfflineException();
+    }
+  }
+
+  /**
+   * send archived offline message to a newly connected user
+   * @param user 
+   */
+  async syncOfflineMsg(user: User){
+    const messenger = this.socketManager.getMessenger(user.id);
+    if (messenger) {
+      const offlineMsgs = await this.offlineMessageService.retrive(user.id);
+    } else {
+      throw new Error('unknown error');
     }
   }
 

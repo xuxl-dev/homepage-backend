@@ -1,9 +1,10 @@
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Geographic } from "./geographic.entity";
 import * as bcrypt from 'bcryptjs';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
 import { Comment } from "../../comment/entities/comment.entity";
+import { Chatgroup } from "src/modules/chatgroup/entities/chatgroup.entity";
 
 @Entity('user')
 export class User {
@@ -76,6 +77,9 @@ export class User {
 
     @OneToMany(() => Comment, comment => comment.createdBy)
     comments: Comment[];
+
+    @ManyToMany(() => Chatgroup, chatgroup => chatgroup.members)
+    joinedChatGroups: Chatgroup[];
 
     @BeforeInsert() 
     async encryptPwd() { 
