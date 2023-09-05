@@ -5,9 +5,11 @@ import { InternalMessage } from '../internal-message/entities/internal-message.e
 import { Logger } from '@nestjs/common';
 import { ACKMessage, ACKMessageType } from '../internal-message/entities/ack-message.entity';
 import { messageToken } from './Tokens';
-import { Snowflake } from './utils';
-import { CreateInternalMessageDto } from '../internal-message/dto/create-internal-message.dto';
+import { UserOfflineException } from '../internal-message/internal-message.service';
+import { OfflineMessage } from '../offline-message/entities/offline-message.entity';
 import { snowflake } from './snowflake';
+import { OfflineMessageService } from '../offline-message/offline-message.service';
+
 
 const logger = new Logger('SocketIoGateway')
 
@@ -20,17 +22,16 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private readonly socketIoService: SocketIoService,
+    private readonly offlineMessageService : OfflineMessageService
   ) {}
 
-  afterInit(server) {
-  }
+  afterInit(server) {}
   handleDisconnect(client) {
     logger.debug(`user disconnected: ${client.user.id}`);
     this.socketIoService.removeSocket(client.user.id);
   }
 
   async handleConnection(socket: Socket) {
-    console.log("Connection received");
     try {
       const user = await this.socketIoService.getUserFromSocket(socket);
       socket.emit('connected', user, (val: any) => {
@@ -57,19 +58,33 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   @SubscribeMessage(messageToken)
-  handleMessage(
-    @MessageBody() data: CreateInternalMessageDto,
+
+  async handleMessage(
+    @MessageBody() data: InternalMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    const message = new InternalMessage(data);
-    console.log("Message sent: " + JSON.stringify(message));
-    this.socketIoService.sendMessageOrThrow(message);
+    try {
+      logger.log("Try send message: ", data);
+      await this.socketIoService.sendMessageOrThrow(data);
+      console.log("Message sent");
+    } catch (e) {
+      if (e instanceof UserOfflineException) {
+        logger.log("Failed to send online message, trying offline msg ");
+        // convert into offline message
+        const offlineMessage = OfflineMessage.new(client.user.id, data.receiverId, data.content)
+        await this.offlineMessageService.sendMessageOrFail(offlineMessage);
+        logger.log("Offline message sent");
+      } else {
+        logger.error(`Unknown error when sending online message: ${e}`);
+      }
+    }
+    
     return new ACKMessage(
       message.msgId,
       -1,
       message.receiverId,
       ACKMessageType.SERVER_RECEIVED
-    );
+    ).serialize();
   }
 
   @SubscribeMessage('joinRoom')

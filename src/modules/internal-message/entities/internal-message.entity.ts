@@ -1,21 +1,26 @@
 import { snowflake } from "src/modules/socket-io/snowflake";
 import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
 
-export type MsgId = string;
-
+export type MsgId = bigint;
+export type MessengerId = userId | groupId;
+export type userId = number;
+export type groupId = number;
 export class InternalMessage {
   msgId: MsgId
 
-  senderId: number
-  receiverId: number
+  senderId: MessengerId
+
+  receiverId: MessengerId
+
 
   content: string
 
+  sentAt: Date  // timestamp
+                  // timezone is not processed here
   constructor(createInternalMsgDto: CreateInternalMessageDto) {
-    this.msgId = snowflake.nextId()
-    this.senderId = createInternalMsgDto.senderId
     this.receiverId = createInternalMsgDto.receiverId
     this.content = createInternalMsgDto.content
+    this.sentAt = new Date()
   }
 
 } //actually this is a special case of BroadcastMessage
@@ -23,27 +28,28 @@ export class InternalMessage {
 
 
 
+
 export class BroadcastMessage {
   msgId: number;
 
-  senderId: number;
+  senderId: number
   /**
    * GroupId is the id of the chatgroup, not socketio room
    * socketio room contains only online users
    */
-  groupId: number;
+  groupId: number
 
-  content: string;
+  content: string
 }
 /**
  * Note that this will be sent to all users in the chatgroup
  * But these is not online will not receive it
  */
 export class MultiCastMessage {
-  msgId: number;
+  msgId: number
 
-  senderId: number;
-  groupIds: number[];
+  senderId: number
+  groupIds: number[]
 
-  content: string;
+  content: string
 }

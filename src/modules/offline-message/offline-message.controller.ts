@@ -6,6 +6,4 @@ import { UpdateOfflineMessageDto } from './dto/update-offline-message.dto';
 @Controller('offline-message')
 export class OfflineMessageController {
   constructor(private readonly offlineMessageService: OfflineMessageService) {}
-
- 
 }

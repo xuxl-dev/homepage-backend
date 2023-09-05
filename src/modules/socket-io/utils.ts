@@ -1,57 +1,3 @@
-import { timeout, backOff, asPromise } from "src/utils/utils";
-import { Socket } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { InternalMessage } from "../internal-message/entities/internal-message.entity";
-import { Logger } from "@nestjs/common";
-import { ACKMessage } from "../internal-message/entities/ack-message.entity";
-
-const logger = new Logger('SocketIoService')
-
-// /**
-//  * this ensures that the message is sent to the client
-//  * or throws an error
-//  * @param socket 
-//  * @param message 
-//  * @returns 
-//  */
-// export async function sendMessageOrThrow(socket: Socket, message: InternalMessage, maxAckTimeout = 3000, backOffInterval = 50, backOffRetries = 10) {
-//   return new Promise<void>((resolve, reject) => {
-//     let ackTimeout: string | number | NodeJS.Timeout
-//     const sendActionFactoryAsync = async () => {
-//       socket.emit(MessagingToken, message)
-//       // blocked wait for ack
-//       await new Promise<void>((resolve, reject) => {
-//         socket.once(ACKToken, (ack: ACKMessage) => { //refactor this, this is resouce consuming
-//           logger.debug(`message ack received: ${ack}`)
-//           clearTimeout(ackTimeout)
-//           resolve()
-//         });
-//         ackTimeout = setTimeout(() => {
-//           socket.removeAllListeners(ACKToken) //check if this is correct
-//           reject(new Error('ack timeout'))
-//         }, maxAckTimeout);
-//       })
-//     }
-
-//     backOff(sendActionFactoryAsync, backOffInterval, backOffRetries).then(() => {
-//       resolve()
-//     }).catch((e) => {
-//       reject(e)
-//     })
-//   })
-// }
-// function emitAsync(socket, eventName, data) {
-//   return new Promise((resolve, reject) => {
-//     socket.emit(eventName, data, (response) => {
-//       if (response.error) {
-//         reject(response.error)
-//       } else {
-//         resolve(response.data)
-//       }
-//     });
-//   });
-// }
-
 export class Snowflake {
   private static readonly twepoch = 1060272000; // 初始时间戳，这个可以根据实际需要调整
   private static readonly workerIdBits = 5;
@@ -76,7 +22,7 @@ export class Snowflake {
     this.dataCenterId = dataCenterId;
   }
 
-  public nextId(): string {
+  public nextId(): bigint {
     let timestamp = this.timeGen();
 
     if (timestamp < this.lastTimestamp) {
@@ -99,7 +45,7 @@ export class Snowflake {
       (this.dataCenterId << Snowflake.workerIdBits) |
       this.workerId;
 
-    return id.toString();
+    return BigInt(id);
   }
 
   private tilNextMillis(lastTimestamp: number): number {
@@ -116,3 +62,8 @@ export class Snowflake {
 }
 
 
+export class UnknownError extends Error {
+  constructor(message?: string) {
+    super(message);
+  }
+}

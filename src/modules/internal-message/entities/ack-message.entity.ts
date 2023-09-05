@@ -20,4 +20,11 @@ export class ACKMessage extends OmitType(InternalMessage, ['content']) {
     this.receiverId = receiverId
     this.type = type
   }
+
+  serialize(){
+    // handle bigint
+    return JSON.stringify(this, 
+      (key, value) => typeof value === 'bigint' ? value.toString() : value
+    )
+  }
 }

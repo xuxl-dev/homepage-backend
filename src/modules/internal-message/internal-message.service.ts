@@ -37,7 +37,7 @@ export class InternalMessageService {
       if (e instanceof UserOfflineException) {
         try {
           await this.usermetaService.setStatus(message.receiverId, UserStatus.OFFLINE);
-          this.offlineMessageService.sendMessageOrThrow(message);
+          this.offlineMessageService.sendMessageOrFail(message);
         } catch (e) {
           // this shall never happen
           // but if it does, we have a problem

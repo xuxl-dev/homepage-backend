@@ -60,6 +60,7 @@ export function backOff<T>(actionFactory:() => Promise<T>, ms: number, maxRetrie
         if (retries < maxRetries) {
           retries++;
           setTimeout(() => {
+            console.log('retrying')
             retry()
           }, ms *= 2) // exponential backoff
         } else {
@@ -68,6 +69,7 @@ export function backOff<T>(actionFactory:() => Promise<T>, ms: number, maxRetrie
       })
     }
     retry()
+    console.log('backoff started')
   })
 }
 

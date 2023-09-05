@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from "helmet";
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { AllExceptionsFilter } from './utils/AllExceptionFilter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -29,7 +30,8 @@ async function bootstrap() {
     }
   ))
   app.use(helmet()); // for better security
-
+  // global error handler
+  // app.useGlobalFilters(new AllExceptionsFilter());
 
   await app.listen(3000);
 }

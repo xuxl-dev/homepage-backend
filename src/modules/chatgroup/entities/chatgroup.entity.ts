@@ -1,4 +1,6 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "src/modules/user/entities/user.entity";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+
 
 
 //TypeORM https://typeorm.bootcss.com/
@@ -12,7 +14,8 @@ export class Chatgroup {
   @Column()
   name: string;
 
-  // 群成员
 
-  // ...
+  @ManyToMany(() => User, (user) => user.joinedChatGroups)
+  @JoinTable()
+  members: User[];
 }

@@ -7,7 +7,6 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import configGenerator from './config/config';
 import { RedisModule } from './modules/db/redis/redis.module';
-import { CommentModule } from './modules/comment/comment.module';
 import { InternalMessageModule } from './modules/internal-message/internal-message.module';
 import { GroupModule } from './modules/group/group.module';
 import { OfflineMessageModule } from './modules/offline-message/offline-message.module';
@@ -53,7 +52,6 @@ import { SocketIoModule } from './modules/socket-io/socket-io.module';
     UserModule,
     AuthModule,
     RedisModule,
-    CommentModule,
     InternalMessageModule,
     GroupModule,
     OfflineMessageModule,

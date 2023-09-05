@@ -35,3 +35,11 @@ $ npm run start:prod
 |thunder|雷消息（类似DING）|
 |user|用户|
 |usermeta|用户元数据(目前主要维护在线情况)|
+
+### About Loong message system
+#### for online message
+可选的E2EE加密，可选的消息分片
+密钥协商参见[这里](https://blog.yuzhes.com/posts/xlcomm.html)
+
+#### for offline message
+不分片，不能E2EE加密(因为不知道对方的密钥)，但是可以保障消息安全，如果用户启用了RSA加密，就使用用户预留的公钥加密（用户可以自行选择预留密钥）
