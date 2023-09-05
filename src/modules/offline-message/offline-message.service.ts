@@ -23,32 +23,29 @@ export class OfflineMessageService {
     private readonly userRepository: Repository<User>,
   ) { }
 
-  // async sendMessageOrFail(message: InternalMessage) {
-  //   console.log('sendMessageOrFail,', message)
-  //   await this.offlineMessageRepository.save(OfflineMessage.fromInternal(message))
-  // }
-  async sendMessageOrFail(message) {}
+  async sendMessageOrFail(message: InternalMessage) {
+    console.log('sendMessageOrFail,', message)
+    return await this.offlineMessageRepository.save(OfflineMessage.fromInternal(message))
+  }
   /**
    * retrieve offline messages for a user including chat and chat group
    * Then delete it from database (if marked as e2e encrypted, delete it immediately, 
    * if marked as not to delete, do not delete it)
    * @param userId 
    */
-  // async retrive(userId: number) {
-  //   const ret = []
-  //   // select all records with receiverId = userId
-  //   ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: userId } }))
-  //   // retrive groups of user
-  //   const { joinedChatGroups } = await this.userRepository.findOne({
-  //     where: { id: userId },
-  //     relations: ['joinedChatGroups']
-  //   })
-  //   joinedChatGroups.forEach(async (group) => {
-  //     ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: group.id } })) //TODO: test this
-  //   })
-  //   return ret
-  // }
-  async retrive(id) {
-    return []
+  async retrive(userId: number) {
+    const ret = []
+    // select all records with receiverId = userId
+    ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: userId } }))
+    // retrive groups of user
+    const { joinedChatGroups } = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['joinedChatGroups']
+    })
+    joinedChatGroups.forEach(async (group) => {
+      ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: group.id } })) //TODO: test this
+    })
+    return ret
   }
+
 }

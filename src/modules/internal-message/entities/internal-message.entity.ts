@@ -13,12 +13,12 @@ export class InternalMessage {
 
   content: string
 
-  sentAt: number  // timestamp
+  sentAt: Date  // timestamp
                   // timezone is not processed here
   constructor(createInternalMsgDto: CreateInternalMessageDto) {
     this.receiverId = createInternalMsgDto.receiverId
     this.content = createInternalMsgDto.content
-    this.sentAt = Date.now()
+    this.sentAt = new Date()
   }
 
 } //actually this is a special case of BroadcastMessage

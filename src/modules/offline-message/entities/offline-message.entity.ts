@@ -5,7 +5,12 @@ import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryColumn } fro
 
 @Entity()
 export class OfflineMessage {
-  @PrimaryColumn('bigint')
+  @PrimaryColumn('bigint',{
+    transformer: {
+      from: (value: string) => BigInt(value),
+      to: (value: MsgId) => value.toString(),
+    }
+  })
   msgId: MsgId
 
   @Index()
@@ -19,8 +24,8 @@ export class OfflineMessage {
   @Column()
   content: string
 
-  @Column()
-  sentAt: number
+  @Column({ type: 'datetime' })
+  sentAt: Date
 
   static fromInternal(InternalMessage:InternalMessage) {
     const msg = new OfflineMessage()
@@ -39,7 +44,7 @@ export class OfflineMessage {
     msg.senderId = senderId
     msg.receiverId = receiverId
     msg.content = content
-    msg.sentAt = Date.now()
+    msg.sentAt = new Date()
     return msg
   }
 }

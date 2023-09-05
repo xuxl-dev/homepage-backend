@@ -8,6 +8,7 @@ import { messageToken } from './Tokens';
 import { UserOfflineException } from '../internal-message/internal-message.service';
 import { OfflineMessage } from '../offline-message/entities/offline-message.entity';
 import { snowflake } from './snowflake';
+import { OfflineMessageService } from '../offline-message/offline-message.service';
 
 const logger = new Logger('SocketIoGateway')
 
@@ -20,7 +21,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private readonly socketIoService: SocketIoService,
-    // private readonly offlineMessageService : OfflineMessageService
+    private readonly offlineMessageService : OfflineMessageService
   ) {}
 
   afterInit(server) {}
@@ -69,7 +70,8 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
         logger.log("Failed to send online message, trying offline msg ");
         // convert into offline message
         const offlineMessage = OfflineMessage.new(client.user.id, data.receiverId, data.content)
-        // this.offlineMessageService.sendMessageOrFail(offlineMessage);
+        await this.offlineMessageService.sendMessageOrFail(offlineMessage);
+        logger.log("Offline message sent");
       } else {
         logger.error(`Unknown error when sending online message: ${e}`);
       }
