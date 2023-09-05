@@ -1,5 +1,6 @@
 
 import { InternalMessage, MsgId, MessengerId } from "src/modules/internal-message/entities/internal-message.entity";
+import { snowflake } from "src/modules/socket-io/snowflake";
 import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryColumn } from "typeorm";
 
 @Entity()
@@ -28,6 +29,17 @@ export class OfflineMessage {
     msg.receiverId = InternalMessage.receiverId
     msg.content = InternalMessage.content
     msg.sentAt = InternalMessage.sentAt
+    return msg
+  }
+
+
+  static new(senderId: MessengerId, receiverId: MessengerId, content: string) {
+    const msg = new OfflineMessage()
+    msg.msgId = snowflake.nextId()
+    msg.senderId = senderId
+    msg.receiverId = receiverId
+    msg.content = content
+    msg.sentAt = Date.now()
     return msg
   }
 }

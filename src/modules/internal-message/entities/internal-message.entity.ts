@@ -16,7 +16,6 @@ export class InternalMessage {
   sentAt: number  // timestamp
                   // timezone is not processed here
   constructor(createInternalMsgDto: CreateInternalMessageDto) {
-    this.senderId = createInternalMsgDto.senderId
     this.receiverId = createInternalMsgDto.receiverId
     this.content = createInternalMsgDto.content
     this.sentAt = Date.now()

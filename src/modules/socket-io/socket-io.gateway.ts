@@ -5,13 +5,11 @@ import { InternalMessage } from '../internal-message/entities/internal-message.e
 import { Logger } from '@nestjs/common';
 import { ACKMessage, ACKMessageType } from '../internal-message/entities/ack-message.entity';
 import { messageToken } from './Tokens';
-import { Snowflake } from './utils';
+import { UserOfflineException } from '../internal-message/internal-message.service';
+import { OfflineMessage } from '../offline-message/entities/offline-message.entity';
+import { snowflake } from './snowflake';
 
 const logger = new Logger('SocketIoGateway')
-
-const workerId = 1; // 机器 ID
-const dataCenterId = 1; // 数据中心 ID
-const snowflake = new Snowflake(workerId, dataCenterId);
 
 @WebSocketGateway(3001, {
   cors: true,
@@ -22,10 +20,10 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private readonly socketIoService: SocketIoService,
+    // private readonly offlineMessageService : OfflineMessageService
   ) {}
 
-  afterInit(server) {
-  }
+  afterInit(server) {}
   handleDisconnect(client) {
     logger.debug(`user disconnected: ${client.user.id}`);
     this.socketIoService.removeSocket(client.user.id);
@@ -58,19 +56,32 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   @SubscribeMessage(messageToken)
-  handleMessage(
+  async handleMessage(
     @MessageBody() data: InternalMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log("Message sent: " + JSON.stringify(data));
-    this.socketIoService.sendMessageOrThrow(data);
+    try {
+      logger.log("Try send message: ", data);
+      await this.socketIoService.sendMessageOrThrow(data);
+      console.log("Message sent");
+    } catch (e) {
+      if (e instanceof UserOfflineException) {
+        logger.log("Failed to send online message, trying offline msg ");
+        // convert into offline message
+        const offlineMessage = OfflineMessage.new(client.user.id, data.receiverId, data.content)
+        // this.offlineMessageService.sendMessageOrFail(offlineMessage);
+      } else {
+        logger.error(`Unknown error when sending online message: ${e}`);
+      }
+    }
+    
     return new ACKMessage(
       snowflake.nextId(),
       data.msgId,
       -1,
       data.receiverId,
       ACKMessageType.SERVER_RECEIVED
-    );
+    ).serialize();
   }
 
   @SubscribeMessage('ackMessage')

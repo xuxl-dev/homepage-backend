@@ -1,5 +1,7 @@
 import { Socket } from "socket.io";
 import { Messenger } from "./messenger";
+import { UserOfflineException } from "../internal-message/internal-message.service";
+import { UnknownError } from "./utils";
 
 /**
  * SocketManager
@@ -20,13 +22,13 @@ export class SocketManager {
   /**
    * Map from user id to socket id
    */
-  private userToMessengerMap : Map<number, Messenger> = new Map()
+  private userToMessengerMap: Map<number, Messenger> = new Map()
 
   /**
    * Map from socket id to user id
    */
 
-  private messengerToUserMap : Map<Messenger, number> = new Map()
+  private messengerToUserMap: Map<Messenger, number> = new Map()
 
   set(user: number, socket: Socket) {
     const messgener = new Messenger(socket)
@@ -51,6 +53,8 @@ export class SocketManager {
   }
 
   getMessenger(user: number) {
-    return this.userToMessengerMap.get(user)
+    const ret = this.userToMessengerMap.get(user)
+    if (ret) return ret
+    else throw new UserOfflineException()
   }
 }
