@@ -1,3 +1,4 @@
+import { snowflake } from "src/modules/socket-io/snowflake";
 import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
 
 export type MsgId = bigint;
@@ -10,6 +11,7 @@ export class InternalMessage {
   senderId: MessengerId
 
   receiverId: MessengerId
+
 
   content: string
 
@@ -26,8 +28,9 @@ export class InternalMessage {
 
 
 
-export class BrocastMessage {
-  msgId: number
+
+export class BroadcastMessage {
+  msgId: number;
 
   senderId: number
   /**

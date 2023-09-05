@@ -5,6 +5,7 @@ import { AuthService } from '../auth/auth.service';
 import { ChatgroupService } from '../chatgroup/chatgroup.service';
 import { OfflineMessageService } from '../offline-message/offline-message.service';  
 import { BrocastMessage, InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
+
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
 import { UserOfflineException } from '../internal-message/internal-message.service';
@@ -32,12 +33,12 @@ export class SocketIoService {
    * @param message 
    */
   async sendMessageOrThrow(message: InternalMessage) {
-
     const messenger = this.socketManager.getMessenger(message.receiverId)
 
     if (messenger._socket.user) {
       message.senderId = messenger._socket.user?.id
     } else throw new UnknownError()
+
 
     if (messenger) {
       await messenger.sendMessageWithTimeout(message, 3000);

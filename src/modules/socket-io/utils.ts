@@ -1,5 +1,5 @@
 export class Snowflake {
-  private static readonly twepoch = 1625097600000; // 初始时间戳，这个可以根据实际需要调整
+  private static readonly twepoch = 1060272000; // 初始时间戳，这个可以根据实际需要调整
   private static readonly workerIdBits = 5;
   private static readonly dataCenterIdBits = 5;
   private static readonly maxWorkerId = -1 ^ (-1 << Snowflake.workerIdBits);

@@ -17,8 +17,8 @@ async function bootstrap() {
   //   .build();
   // const document = SwaggerModule.createDocument(app, config);
   // SwaggerModule.setup('/apidoc', app, document); 
-  Logger.debug('Swagger is available on: http://localhost:3000/apidoc');
-  Logger.debug('Import json file from: http://localhost:3000/apidoc-json');
+  // Logger.debug('Swagger is available on: http://localhost:3000/apidoc');
+  // Logger.debug('Import json file from: http://localhost:3000/apidoc-json');
 
   app.useGlobalPipes(new ValidationPipe(
     {

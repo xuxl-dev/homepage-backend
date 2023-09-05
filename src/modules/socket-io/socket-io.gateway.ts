@@ -10,6 +10,7 @@ import { OfflineMessage } from '../offline-message/entities/offline-message.enti
 import { snowflake } from './snowflake';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 
+
 const logger = new Logger('SocketIoGateway')
 
 @WebSocketGateway(3001, {
@@ -57,6 +58,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   @SubscribeMessage(messageToken)
+
   async handleMessage(
     @MessageBody() data: InternalMessage,
     @ConnectedSocket() client: Socket,
@@ -78,19 +80,11 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
     
     return new ACKMessage(
-      snowflake.nextId(),
-      data.msgId,
+      message.msgId,
       -1,
-      data.receiverId,
+      message.receiverId,
       ACKMessageType.SERVER_RECEIVED
     ).serialize();
-  }
-
-  @SubscribeMessage('ackMessage')
-  handleAckMessage(
-    @MessageBody() data: ACKMessage,
-    @ConnectedSocket() client: Socket){
-    console.log("Message ack: " + JSON.stringify(data));
   }
 
   @SubscribeMessage('joinRoom')
