@@ -40,7 +40,7 @@ export class OfflineMessage {
 
   static new(senderId: MessengerId, receiverId: MessengerId, content: string) {
     const msg = new OfflineMessage()
-    msg.msgId = snowflake.nextId()
+    msg.msgId = snowflake.nextId().toString()
     msg.senderId = senderId
     msg.receiverId = receiverId
     msg.content = content

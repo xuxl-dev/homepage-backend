@@ -9,6 +9,7 @@ import { UserOfflineException } from '../internal-message/internal-message.servi
 import { OfflineMessage } from '../offline-message/entities/offline-message.entity';
 import { snowflake } from './snowflake';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
+import { CreateInternalMessageDto } from '../internal-message/dto/create-internal-message.dto';
 
 
 const logger = new Logger('SocketIoGateway')
@@ -58,21 +59,20 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   @SubscribeMessage(messageToken)
-
   async handleMessage(
-    @MessageBody() data: InternalMessage,
+    @MessageBody() data: CreateInternalMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
+    const msg = new InternalMessage(data).setSender(client.user.id)
     try {
       logger.log("Try send message: ", data);
-      await this.socketIoService.sendMessageOrThrow(data);
+      await this.socketIoService.sendMessageOrThrow(msg);
       console.log("Message sent");
     } catch (e) {
       if (e instanceof UserOfflineException) {
         logger.log("Failed to send online message, trying offline msg ");
         // convert into offline message
-        const offlineMessage = OfflineMessage.new(client.user.id, data.receiverId, data.content)
-        await this.offlineMessageService.sendMessageOrFail(offlineMessage);
+        await this.offlineMessageService.sendMessageOrFail(msg);
         logger.log("Offline message sent");
       } else {
         logger.error(`Unknown error when sending online message: ${e}`);
@@ -80,11 +80,10 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
     
     return new ACKMessage(
-      message.msgId,
-      -1,
-      message.receiverId,
+      msg.msgId,
+      msg.senderId,
       ACKMessageType.SERVER_RECEIVED
-    ).serialize();
+    )
   }
 
   @SubscribeMessage('joinRoom')

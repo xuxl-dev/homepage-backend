@@ -24,7 +24,6 @@ export class OfflineMessageService {
   ) { }
 
   async sendMessageOrFail(message: InternalMessage) {
-    console.log('sendMessageOrFail,', message)
     return await this.offlineMessageRepository.save(OfflineMessage.fromInternal(message))
   }
   /**

@@ -12,19 +12,10 @@ export class ACKMessage extends OmitType(InternalMessage, ['content']) {
   type: ACKMessageType;
   ackMsgId: MsgId;
 
-  constructor(ackMsgId: MsgId, senderId: number, receiverId: number, type: ACKMessageType) {
+  constructor(ackMsgId: MsgId, receiverId: number, type: ACKMessageType) {
     super()
-    this.msgId = snowflake.nextId()
     this.ackMsgId = ackMsgId
-    this.senderId = senderId
     this.receiverId = receiverId
     this.type = type
-  }
-
-  serialize(){
-    // handle bigint
-    return JSON.stringify(this, 
-      (key, value) => typeof value === 'bigint' ? value.toString() : value
-    )
   }
 }

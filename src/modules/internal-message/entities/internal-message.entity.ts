@@ -1,7 +1,7 @@
 import { snowflake } from "src/modules/socket-io/snowflake";
 import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
 
-export type MsgId = bigint;
+export type MsgId = string;
 export type MessengerId = userId | groupId;
 export type userId = number;
 export type groupId = number;
@@ -12,21 +12,22 @@ export class InternalMessage {
 
   receiverId: MessengerId
 
-
   content: string
 
   sentAt: Date  // timestamp
                   // timezone is not processed here
   constructor(createInternalMsgDto: CreateInternalMessageDto) {
+    this.msgId = snowflake.nextId().toString()
     this.receiverId = createInternalMsgDto.receiverId
     this.content = createInternalMsgDto.content
     this.sentAt = new Date()
   }
 
+  setSender(senderId: MessengerId) {
+    this.senderId = senderId
+    return this
+  }
 } //actually this is a special case of BroadcastMessage
-
-
-
 
 
 export class BroadcastMessage {
