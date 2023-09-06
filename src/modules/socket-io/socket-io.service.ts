@@ -4,7 +4,7 @@ import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { ChatgroupService } from '../chatgroup/chatgroup.service';
 import { OfflineMessageService } from '../offline-message/offline-message.service';  
-import { BrocastMessage, InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
+import { InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
 
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
@@ -41,6 +41,7 @@ export class SocketIoService {
 
 
     if (messenger) {
+      console.log('send message: ', message)
       await messenger.sendMessageWithTimeout(message, 3000);
     } else {
       throw new UserOfflineException();
