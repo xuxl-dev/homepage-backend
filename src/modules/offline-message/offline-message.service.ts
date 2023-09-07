@@ -33,16 +33,17 @@ export class OfflineMessageService {
    * @param userId 
    */
   async retrive(userId: number) {
-    const ret = []
+    console.log("Retrive offline messages for user: ", userId)
+    let ret : OfflineMessage[] = []
     // select all records with receiverId = userId
-    ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: userId } }))
+    ret = ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: userId } })) //TODO this may have efficiency problem
     // retrive groups of user
     const { joinedChatGroups } = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['joinedChatGroups']
     })
     joinedChatGroups.forEach(async (group) => {
-      ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: group.id } })) //TODO: test this
+      ret = ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: group.id } })) //TODO: test this, check this
     })
     return ret
   }

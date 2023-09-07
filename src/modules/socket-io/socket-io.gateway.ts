@@ -19,7 +19,7 @@ const logger = new Logger('SocketIoGateway')
 })
 export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
-  server: Server;
+  server: Server
 
   constructor(
     private readonly socketIoService: SocketIoService,
@@ -28,23 +28,27 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   afterInit(server) {}
   handleDisconnect(client) {
-    logger.debug(`user disconnected: ${client.user.id}`);
-    this.socketIoService.removeSocket(client.user.id);
+    logger.debug(`user disconnected: ${client.user.id}`)
+    this.socketIoService.removeSocket(client.user.id)
   }
 
   async handleConnection(socket: Socket) {
     try {
       const user = await this.socketIoService.getUserFromSocket(socket);
-      socket.emit('connected', user, (val: any) => {
-        logger.debug(`connected ack received: ${val}`);
-      });
+      socket.emit('connected', user)
       socket.user = user
-      this.socketIoService.addSocket(user.id, socket);
-      logger.debug(`user connected: ${user.id}`);
+      this.socketIoService.addSocket(user.id, socket)
+      logger.debug(`user connected: ${user.id}`)
+      // try retrieve offline messages
+      const offlineMessages = await this.offlineMessageService.retrive(user.id)
+      console.log("Offline messages: ", offlineMessages)
+      for (const msg of offlineMessages) {
+        //TODO implement this
+      }
     } catch (e) {
-      logger.debug(`invalid token: ${e}`);
-      socket.emit('connected', 'invalid token');
-      socket.disconnect(); // invalid token
+      logger.debug(`invalid token: ${e}`)
+      socket.emit('connected', 'invalid token')
+      socket.disconnect() // invalid token
     }
   }
 
@@ -65,17 +69,17 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   ) {
     const msg = new InternalMessage(data).setSender(client.user.id)
     try {
-      logger.log("Try send message: ", data);
-      await this.socketIoService.sendMessageOrThrow(msg);
+      logger.log("Try send message: ", data)
+      await this.socketIoService.sendMessageOrThrow(msg)
       console.log("Message sent");
     } catch (e) {
       if (e instanceof UserOfflineException) {
-        logger.log("Failed to send online message, trying offline msg ");
+        logger.log("Failed to send online message, trying offline msg ")
         // convert into offline message
-        await this.offlineMessageService.sendMessageOrFail(msg);
-        logger.log("Offline message sent");
+        await this.offlineMessageService.sendMessageOrFail(msg)
+        logger.log("Offline message sent")
       } else {
-        logger.error(`Unknown error when sending online message: ${e}`);
+        logger.error(`Unknown error when sending online message: ${e}`)
       }
     }
     
@@ -94,9 +98,9 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     //TODO check if room exists
     //TODO check if user is in room
     //TODO check if user is allowed to join room
-    console.log("Join room: " + data);
-    this.socketIoService.joinRoom(data, client);
-    return 'joined';
+    console.log("Join room: " + data)
+    this.socketIoService.joinRoom(data, client)
+    return 'joined'
   }
 
   @SubscribeMessage('leaveRoom')
@@ -107,8 +111,8 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     //TODO check if room exists
     //TODO check if user is in room
     //TODO check if user is allowed to leave room
-    console.log("Leave room: " + data);
-    this.socketIoService.leaveRoom(data, client);
-    return 'left';
+    console.log("Leave room: " + data)
+    this.socketIoService.leaveRoom(data, client)
+    return 'left'
   }
 }
