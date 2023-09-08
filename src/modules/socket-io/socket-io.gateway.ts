@@ -6,8 +6,6 @@ import { Logger } from '@nestjs/common';
 import { ACKMessage, ACKMessageType } from '../internal-message/entities/ack-message.entity';
 import { messageToken } from './Tokens';
 import { UserOfflineException } from '../internal-message/internal-message.service';
-import { OfflineMessage } from '../offline-message/entities/offline-message.entity';
-import { snowflake } from './snowflake';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 import { CreateInternalMessageDto } from '../internal-message/dto/create-internal-message.dto';
 
