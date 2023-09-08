@@ -23,6 +23,14 @@ export class OfflineMessageService {
     private readonly userRepository: Repository<User>,
   ) { }
 
+  /** 
+   * Note that this won't duplicate message if the id is unique
+   * and in db, a unique constraint is set on msgId
+   * so this is safe to call even if the message is already in db 
+   * (aka it's a latened offline message converted into online message,
+   * but it fails again, then convert into offline message again)
+   * */
+
   async sendMessageOrFail(message: InternalMessage) {
     return await this.offlineMessageRepository.save(OfflineMessage.fromInternal(message))
   }
@@ -33,7 +41,6 @@ export class OfflineMessageService {
    * @param userId 
    */
   async retrive(userId: number) {
-    console.log("Retrive offline messages for user: ", userId)
     let ret : OfflineMessage[] = []
     // select all records with receiverId = userId
     ret = ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: userId } })) //TODO this may have efficiency problem

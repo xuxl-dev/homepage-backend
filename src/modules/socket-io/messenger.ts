@@ -27,7 +27,7 @@ export class Messenger {
       if (!response) {
         throw new Error('Invalid message received') //TODO: add more validation
       }
-      const { msgId, senderId, receiverId, type, ackMsgId }= response
+      const { msgId, senderId, receiverId, type, ackMsgId } = response
       console.log(
         'ACK Message received for msg: ', ackMsgId, 
         'from ', senderId, 
@@ -51,7 +51,7 @@ export class Messenger {
     return new Promise<ACKMessage>((resolve, reject) => {
       setTimeout(() => {
         this.pendingMessages.delete(message.msgId)
-        reject(new Error('Message timed out'))
+        reject(new MessageTimeoutException())
       }, timeout)
 
       this.pendingMessages.set(message.msgId, { resolve, reject })
@@ -61,5 +61,11 @@ export class Messenger {
 
   sendMessageBackoffWithTimeout(message: InternalMessage, timeout: number = 1000, maxRetries = 3, retryInterval = 100): Promise<ACKMessage> {
     return backOff(() => this.sendMessageWithTimeout(message, timeout), retryInterval, maxRetries)
+  }
+}
+
+export class MessageTimeoutException extends Error {
+  constructor() {
+    super('Message timed out')
   }
 }

@@ -11,7 +11,7 @@ export class OfflineMessage {
       to: (value: MsgId) => value.toString(),
     }
   })
-  msgId: MsgId
+  msgId: bigint
 
   @Index()
   @Column()
@@ -41,7 +41,7 @@ export class OfflineMessage {
 
   static fromInternal(InternalMessage: InternalMessage) {
     const msg = new OfflineMessage()
-    msg.msgId = InternalMessage.msgId
+    msg.msgId = BigInt(InternalMessage.msgId)
     msg.senderId = InternalMessage.senderId
     msg.receiverId = InternalMessage.receiverId
     msg.content = InternalMessage.content
@@ -51,7 +51,7 @@ export class OfflineMessage {
 
   static new(senderId: MessengerId, receiverId: MessengerId, content: string) {
     const msg = new OfflineMessage()
-    msg.msgId = snowflake.nextId().toString()
+    msg.msgId = snowflake.nextId()
     msg.senderId = senderId
     msg.receiverId = receiverId
     msg.content = content

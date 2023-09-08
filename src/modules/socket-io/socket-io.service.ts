@@ -11,6 +11,7 @@ import { SocketManager } from './socket-mamager';
 import { UserOfflineException } from '../internal-message/internal-message.service';
 import { User } from '../user/entities/user.entity';
 import { UnknownError } from './utils';
+import { MessageTimeoutException } from './messenger';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -31,6 +32,9 @@ export class SocketIoService {
    * send message to one user, this is safe to send to offline user
    * if it is offline, an error will be thrown
    * @param message 
+   * @throws UserOfflineException
+   * @throws MessageTimeoutException
+   * @throws UnknownError
    */
   async sendMessageOrThrow(message: InternalMessage) {
     const messenger = this.socketManager.getMessenger(message.receiverId)
@@ -41,25 +45,13 @@ export class SocketIoService {
 
 
     if (messenger) {
-      console.log('send message: ', message)
+      console.log(`Sending online message ${message.msgId}`)
       await messenger.sendMessageWithTimeout(message, 3000);
     } else {
+      console.error(`Sending online message ${message.msgId} failed: `)
       throw new UserOfflineException();
     }
 
-  }
-
-  /**
-   * send archived offline message to a newly connected user
-   * @param user 
-   */
-  async syncOfflineMsg(user: User) {
-    const messenger = this.socketManager.getMessenger(user.id);
-    if (messenger) {
-      const offlineMsgs = await this.offlineMessageService.retrive(user.id);
-    } else {
-      throw new Error('unknown error');
-    }
   }
 
   createRoom(createSocketIoDto: CreateRoomDto) {
@@ -92,6 +84,21 @@ export class SocketIoService {
 
   removeSocket(id: number) {
     this.socketManager.delete(id);
+  }
+
+  async safeSendMessage(msg: InternalMessage){
+    try {
+      await this.sendMessageOrThrow(msg)
+    } catch (e) {
+      if (e instanceof UserOfflineException || e instanceof MessageTimeoutException) {
+        console.log(`Sending online message ${msg.msgId} failed, convert to offline message`)
+        await this.offlineMessageService.sendMessageOrFail(msg)
+        console.log(`Sending offline message ${msg.msgId} success`)
+      } else {
+        console.error(`Sending online message ${msg.msgId} failed: `, e)
+        throw e
+      }
+    }
   }
 
 }

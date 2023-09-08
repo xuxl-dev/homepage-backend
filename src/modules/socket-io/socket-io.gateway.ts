@@ -39,9 +39,11 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
       logger.debug(`user connected: ${user.id}`)
       // try retrieve offline messages
       const offlineMessages = await this.offlineMessageService.retrive(user.id)
-      console.log("Offline messages: ", offlineMessages)
+      console.log(`user ${user.id} has ${offlineMessages.length} offline messages, trying resending`)
       for (const msg of offlineMessages) {
-        //TODO implement this
+        this.socketIoService.safeSendMessage(
+          InternalMessage.fromOfflineMsg(msg)
+        )
       }
     } catch (e) {
       logger.debug(`invalid token: ${e}`)
@@ -66,20 +68,8 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
   ) {
     const msg = new InternalMessage(data).setSender(client.user.id)
-    try {
-      logger.log("Try send message: ", data)
-      await this.socketIoService.sendMessageOrThrow(msg)
-      console.log("Message sent");
-    } catch (e) {
-      if (e instanceof UserOfflineException) {
-        logger.log("Failed to send online message, trying offline msg ")
-        // convert into offline message
-        await this.offlineMessageService.sendMessageOrFail(msg)
-        logger.log("Offline message sent")
-      } else {
-        logger.error(`Unknown error when sending online message: ${e}`)
-      }
-    }
+    
+    this.socketIoService.safeSendMessage(msg)
     
     return new ACKMessage(
       msg.msgId,
