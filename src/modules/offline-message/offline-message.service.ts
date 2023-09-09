@@ -55,4 +55,16 @@ export class OfflineMessageService {
     return ret
   }
 
+  async deleteBefore(date: Date){
+    // 查询并删除过期消息
+    const expiredMessages = await this.offlineMessageRepository.createQueryBuilder()
+    .where('createdAt <= :date', { date })
+    .delete()
+    .execute();
+
+    return expiredMessages
+  }
+
+  
+
 }

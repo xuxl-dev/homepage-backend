@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { Messenger } from "./messenger";
 import { UserOfflineException } from "../internal-message/internal-message.service";
-import { UnknownError } from "./utils";
+import { EventEmitter } from "stream";
 
 /**
  * SocketManager
@@ -9,7 +9,7 @@ import { UnknownError } from "./utils";
  * This class is responsible for managing all socket connections
  * mapping user id to socket id
  */
-export class SocketManager {
+export class SocketManager extends EventEmitter {
 
   private static _instance: SocketManager = new SocketManager()
 
@@ -17,7 +17,9 @@ export class SocketManager {
     return this._instance
   }
 
-  private constructor() { }
+  private constructor() {
+    super()
+  }
 
   /**
    * Map from user id to socket id
@@ -35,6 +37,10 @@ export class SocketManager {
     socket.messenger = messgener
     this.userToMessengerMap.set(user, messgener)
     this.messengerToUserMap.set(messgener, user)
+
+    messgener.on('offline-forward', (msg) => {
+      this.emit('offline-forward', msg)
+    })
   }
 
   delete(user: number) {
@@ -48,8 +54,8 @@ export class SocketManager {
     this.messengerToUserMap.clear()
   }
 
-  getSocket(user: number) {
-    return this.userToMessengerMap.get(user)._socket
+  getSocket(user: number): Socket | undefined {
+    return this.userToMessengerMap.get(user)?._socket
   }
 
   getMessenger(user: number) {

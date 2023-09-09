@@ -4,12 +4,15 @@ import { ACKToken, messageToken } from "./Tokens";
 import { ACKMessage, ACKMessageType } from "../internal-message/entities/ack-message.entity";
 import { backOff } from "src/utils/utils";
 import { SocketManager } from "./socket-mamager";
+import { EventEmitter } from "stream";
+import { snowflake } from "./snowflake";
 
-export class Messenger {
+export class Messenger extends EventEmitter {
   private pendingMessages: Map<MsgId, { resolve: (msg: ACKMessage) => void; reject: (error: Error) => void }> = new Map()
   _socket: Socket
   socketManager: SocketManager = SocketManager.instance()
   constructor(private socket: Socket) {
+    super()
     this.socket.on(ACKToken, this.handleMessage.bind(this))
     this._socket = socket
   }
@@ -27,10 +30,13 @@ export class Messenger {
       if (!response) {
         throw new Error('Invalid message received') //TODO: add more validation
       }
+      response.msgId = snowflake.nextId().toString()
+      response.senderId = this.socket.user?.id
+      response.sentAt = new Date()
       const { msgId, senderId, receiverId, type, ackMsgId } = response
       console.log(
         'ACK Message received for msg: ', ackMsgId, 
-        'from ', senderId, 
+        'from ', senderId, //FIXME this is undefined, fix it
         'to', receiverId, 
         'type', ACKMessageType[type])
       if (this.pendingMessages.has(ackMsgId)) {
@@ -41,6 +47,10 @@ export class Messenger {
       const sender = this.socketManager.getSocket(receiverId);
       if (sender) {
         sender.emit('ack', response);
+      } else {
+        // send offline ack
+        console.log('User is offline, sending offline ack')
+        this.emit('offline-forward', response)
       }
     } catch (error) {
       console.error('Error while handling message:', error)

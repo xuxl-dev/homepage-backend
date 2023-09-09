@@ -20,7 +20,14 @@ export class SocketIoService {
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
     private readonly offlineMessageService: OfflineMessageService,
-  ) { }
+  ) { 
+    this.socketManager.on('offline-forward', async (msg: InternalMessage) => {
+      console.log(`Forwarding offline message ${msg.msgId}`)
+      console.log(msg)
+      await this.offlineMessageService.sendMessageOrFail(msg)
+      console.log(`Forwarding offline message ${msg.msgId} success`)
+    })
+  }
   
   roomManager = new RoomManager()
   socketManager = SocketManager.instance();
