@@ -9,7 +9,8 @@ export enum MessageType {
   'broadcast',
   'ACK',
   'unknown',
-  'e2ee'
+  'e2ee',
+  'key-exchange',
 }
 
 class Message2 {
