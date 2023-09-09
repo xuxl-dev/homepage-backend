@@ -2,6 +2,7 @@ import { Socket } from "socket.io";
 import { Messenger } from "./messenger";
 import { UserOfflineException } from "../internal-message/internal-message.service";
 import { EventEmitter } from "stream";
+import { ACKMessage } from "../internal-message/entities/ack-message.entity";
 
 /**
  * SocketManager
@@ -9,17 +10,21 @@ import { EventEmitter } from "stream";
  * This class is responsible for managing all socket connections
  * mapping user id to socket id
  */
-export class SocketManager extends EventEmitter {
+export class SocketManager {
 
   private static _instance: SocketManager = new SocketManager()
+  onAckFailedCb: (msg: ACKMessage) => Promise<void>
+
+  init(onAckFailedCb:  (msg: ACKMessage) => Promise<void>) {
+    this.onAckFailedCb = onAckFailedCb
+    return this
+  }
 
   public static instance() {
     return this._instance
   }
 
-  private constructor() {
-    super()
-  }
+  private constructor() {}
 
   /**
    * Map from user id to socket id
@@ -33,14 +38,10 @@ export class SocketManager extends EventEmitter {
   private messengerToUserMap: Map<Messenger, number> = new Map()
 
   set(user: number, socket: Socket) {
-    const messgener = new Messenger(socket)
+    const messgener = new Messenger(socket, this.onAckFailedCb)
     socket.messenger = messgener
     this.userToMessengerMap.set(user, messgener)
     this.messengerToUserMap.set(messgener, user)
-
-    messgener.on('offline-forward', (msg) => {
-      this.emit('offline-forward', msg)
-    })
   }
 
   delete(user: number) {

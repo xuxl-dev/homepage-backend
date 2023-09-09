@@ -17,12 +17,14 @@ export class InternalMessage {
 
   sentAt: Date  // timestamp
                 // timezone is not processed here
+  _type: string = 'normal'
+
   constructor(createInternalMsgDto?: CreateInternalMessageDto) {
-    if (!createInternalMsgDto) return
     this.msgId = snowflake.nextId().toString()
+    this.sentAt = new Date()
+    if (!createInternalMsgDto) return
     this.receiverId = createInternalMsgDto.receiverId
     this.content = createInternalMsgDto.content
-    this.sentAt = new Date()
   }
 
   setSender(senderId: MessengerId) {
@@ -37,6 +39,15 @@ export class InternalMessage {
     msg.receiverId = offlineMsg.receiverId
     msg.content = offlineMsg.content
     msg.sentAt = offlineMsg.sentAt
+    return msg
+  }
+
+  static pack(o:object){
+    const msg = new InternalMessage()
+    msg.content = JSON.stringify(o)
+    msg.receiverId = o['receiverId']
+    msg.senderId = o['senderId']
+    msg._type = 'packed'
     return msg
   }
 } //actually this is a special case of BroadcastMessage

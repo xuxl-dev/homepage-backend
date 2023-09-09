@@ -12,6 +12,7 @@ import { UserOfflineException } from '../internal-message/internal-message.servi
 import { User } from '../user/entities/user.entity';
 import { UnknownError } from './utils';
 import { MessageTimeoutException } from './messenger';
+import { ACKMessage } from '../internal-message/entities/ack-message.entity';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -21,16 +22,24 @@ export class SocketIoService {
     private readonly chatGroupService: ChatgroupService,
     private readonly offlineMessageService: OfflineMessageService,
   ) { 
-    this.socketManager.on('offline-forward', async (msg: InternalMessage) => {
-      console.log(`Forwarding offline message ${msg.msgId}`)
-      console.log(msg)
-      await this.offlineMessageService.sendMessageOrFail(msg)
-      console.log(`Forwarding offline message ${msg.msgId} success`)
-    })
+    // this.socketManager.on('offline-forward', async (msg: InternalMessage) => {
+    //   console.log(`Forwarding offline message ${msg.msgId}`)
+    //   console.log(msg)
+    //   await this.offlineMessageService.sendMessageOrFail(msg)
+    //   console.log(`Forwarding offline message ${msg.msgId} success`)
+    // })
   }
   
   roomManager = new RoomManager()
-  socketManager = SocketManager.instance();
+  socketManager = SocketManager.instance().init(async (msg: ACKMessage) => {//TODO use strategy pattern
+    console.log(`Forwarding offline message ${msg.msgId}`)
+    try {
+      await this.safeSendMessage(InternalMessage.pack(msg))
+    } catch (e) {
+      console.error(`Sending offline message ${msg.msgId} failed: `, e)
+      throw e
+    }
+  });
 
   @WebSocketServer()
   io: Server;
@@ -58,7 +67,6 @@ export class SocketIoService {
       console.error(`Sending online message ${message.msgId} failed: `)
       throw new UserOfflineException();
     }
-
   }
 
   createRoom(createSocketIoDto: CreateRoomDto) {
