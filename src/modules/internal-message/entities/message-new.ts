@@ -43,4 +43,25 @@ class Message2 {
     return msg
   }
 
+  /*
+    {
+      _type: 'normal',
+      msgId: '-1554890719',
+      sentAt: '2023-09-10T06:50:38.480Z',
+      receiverId: 2,
+      content: '123',
+      senderId: 2
+    }
+   */
+  static parse(object) {
+    const msg = new Message2()
+    msg.msgId = BigInt(object.msgId)
+    msg.receiverId = object.receiverId
+    msg.content = object.content
+    msg.type = object.type
+    msg.senderId = object.senderId
+    msg.sentAt = new Date(object.sentAt)
+    return msg
+  }
+
 }
