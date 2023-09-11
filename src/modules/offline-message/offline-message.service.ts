@@ -23,6 +23,14 @@ export class OfflineMessageService {
     private readonly userRepository: Repository<User>,
   ) { }
 
+  /** 
+   * Note that this won't duplicate message if the id is unique
+   * and in db, a unique constraint is set on msgId
+   * so this is safe to call even if the message is already in db 
+   * (aka it's a latened offline message converted into online message,
+   * but it fails again, then convert into offline message again)
+   * */
+
   async sendMessageOrFail(message: InternalMessage) {
     return await this.offlineMessageRepository.save(OfflineMessage.fromInternal(message))
   }
@@ -33,18 +41,30 @@ export class OfflineMessageService {
    * @param userId 
    */
   async retrive(userId: number) {
-    const ret = []
+    let ret : OfflineMessage[] = []
     // select all records with receiverId = userId
-    ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: userId } }))
+    ret = ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: userId } })) //TODO this may have efficiency problem
     // retrive groups of user
     const { joinedChatGroups } = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['joinedChatGroups']
     })
     joinedChatGroups.forEach(async (group) => {
-      ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: group.id } })) //TODO: test this
+      ret = ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: group.id } })) //TODO: test this, check this
     })
     return ret
   }
+
+  async deleteBefore(date: Date){
+    // 查询并删除过期消息
+    const expiredMessages = await this.offlineMessageRepository.createQueryBuilder()
+    .where('createdAt <= :date', { date })
+    .delete()
+    .execute();
+
+    return expiredMessages
+  }
+
+  
 
 }

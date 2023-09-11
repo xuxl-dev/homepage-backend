@@ -1,5 +1,6 @@
 import { snowflake } from "src/modules/socket-io/snowflake";
 import { CreateInternalMessageDto } from "../dto/create-internal-message.dto";
+import { OfflineMessage } from "src/modules/offline-message/entities/offline-message.entity";
 
 export type MsgId = string;
 export type MessengerId = userId | groupId;
@@ -15,17 +16,39 @@ export class InternalMessage {
   content: string
 
   sentAt: Date  // timestamp
-                  // timezone is not processed here
-  constructor(createInternalMsgDto: CreateInternalMessageDto) {
+                // timezone is not processed here
+  _type: string = 'normal'
+
+  constructor(createInternalMsgDto?: CreateInternalMessageDto) {
     this.msgId = snowflake.nextId().toString()
+    this.sentAt = new Date()
+    if (!createInternalMsgDto) return
     this.receiverId = createInternalMsgDto.receiverId
     this.content = createInternalMsgDto.content
-    this.sentAt = new Date()
   }
 
   setSender(senderId: MessengerId) {
     this.senderId = senderId
     return this
+  }
+
+  static fromOfflineMsg(offlineMsg: OfflineMessage) {
+    const msg = new InternalMessage()
+    msg.msgId = offlineMsg.msgId.toString()
+    msg.senderId = offlineMsg.senderId
+    msg.receiverId = offlineMsg.receiverId
+    msg.content = offlineMsg.content
+    msg.sentAt = offlineMsg.sentAt
+    return msg
+  }
+
+  static pack(o:object){
+    const msg = new InternalMessage()
+    msg.content = JSON.stringify(o)
+    msg.receiverId = o['receiverId']
+    msg.senderId = o['senderId']
+    msg._type = 'packed'
+    return msg
   }
 } //actually this is a special case of BroadcastMessage
 

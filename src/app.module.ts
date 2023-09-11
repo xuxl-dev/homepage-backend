@@ -20,6 +20,10 @@ import { MailModule } from './modules/notification/mail/mail.module';
 import { QqbotModule } from './modules/notification/qqbot/qqbot.module';
 import { WechatbotModule } from './modules/notification/wechatbot/wechatbot.module';
 import { SocketIoModule } from './modules/socket-io/socket-io.module';
+import { CronModule } from './cron/cron.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@nestjs/bull';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -65,6 +69,18 @@ import { SocketIoModule } from './modules/socket-io/socket-io.module';
     QqbotModule,
     WechatbotModule,
     SocketIoModule,
+    CronModule,
+    ScheduleModule.forRoot(),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'internal-message',
+    }),
+    EventEmitterModule.forRoot()
   ],
   controllers: [AppController],
   providers: [AppService],
