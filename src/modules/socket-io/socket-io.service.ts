@@ -4,15 +4,12 @@ import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { ChatgroupService } from '../chatgroup/chatgroup.service';
 import { OfflineMessageService } from '../offline-message/offline-message.service';  
-import { InternalMessage, MultiCastMessage } from '../internal-message/entities/internal-message.entity';
-
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
 import { UserOfflineException } from '../internal-message/internal-message.service';
-import { User } from '../user/entities/user.entity';
 import { UnknownError } from './utils';
 import { MessageTimeoutException } from './messenger';
-import { ACKMessage } from '../internal-message/entities/ack-message.entity';
+import { Message } from '../internal-message/entities/message-new.entity';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -21,20 +18,13 @@ export class SocketIoService {
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
     private readonly offlineMessageService: OfflineMessageService,
-  ) { 
-    // this.socketManager.on('offline-forward', async (msg: InternalMessage) => {
-    //   console.log(`Forwarding offline message ${msg.msgId}`)
-    //   console.log(msg)
-    //   await this.offlineMessageService.sendMessageOrFail(msg)
-    //   console.log(`Forwarding offline message ${msg.msgId} success`)
-    // })
-  }
+  ) { }
   
   roomManager = new RoomManager()
-  socketManager = SocketManager.instance().init(async (msg: ACKMessage) => {//TODO use strategy pattern
+  socketManager = SocketManager.instance().init(async (msg: Message) => {//TODO use strategy pattern
     console.log(`Forwarding offline message ${msg.msgId}`)
     try {
-      await this.safeSendMessage(InternalMessage.pack(msg))
+      await this.safeSendMessage(msg)
     } catch (e) {
       console.error(`Sending offline message ${msg.msgId} failed: `, e)
       throw e
@@ -52,7 +42,24 @@ export class SocketIoService {
    * @throws MessageTimeoutException
    * @throws UnknownError
    */
-  async sendMessageOrThrow(message: InternalMessage) {
+  async sendMessageOrThrow(message: Message) {
+    const messenger = this.socketManager.getMessenger(message.receiverId)
+
+    if (messenger._socket.user) {
+      message.senderId = messenger._socket.user?.id
+    } else throw new UnknownError()
+
+
+    if (messenger) {
+      console.log(`Sending online message ${message.msgId}`)
+      await messenger.sendMessageWithTimeout(message, 3000);
+    } else {
+      console.error(`Sending online message ${message.msgId} failed: `)
+      throw new UserOfflineException();
+    }
+  }
+
+  async sendMessageOrFail(message: Message) {
     const messenger = this.socketManager.getMessenger(message.receiverId)
 
     if (messenger._socket.user) {
@@ -101,9 +108,9 @@ export class SocketIoService {
     this.socketManager.delete(id);
   }
 
-  async safeSendMessage(msg: InternalMessage){
+  async safeSendMessage(msg: Message){
     try {
-      await this.sendMessageOrThrow(msg)
+      await this.sendMessageOrFail(msg)
     } catch (e) {
       if (e instanceof UserOfflineException || e instanceof MessageTimeoutException) {
         console.log(`Sending online message ${msg.msgId} failed, convert to offline message`)

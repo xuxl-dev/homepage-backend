@@ -1,13 +1,12 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit } from '@nestjs/websockets';
 import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
-import { InternalMessage } from '../internal-message/entities/internal-message.entity';
 import { Logger } from '@nestjs/common';
-import { ACKMessage, ACKMessageType } from '../internal-message/entities/ack-message.entity';
 import { messageToken } from './Tokens';
 import { UserOfflineException } from '../internal-message/internal-message.service';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
-import { CreateInternalMessageDto } from '../internal-message/dto/create-internal-message.dto';
+import { ACKMsgType, Message } from '../internal-message/entities/message-new.entity';
+import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 
 
 const logger = new Logger('SocketIoGateway')
@@ -41,9 +40,8 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
       const offlineMessages = await this.offlineMessageService.retrive(user.id)
       console.log(`user ${user.id} has ${offlineMessages.length} offline messages, trying resending`)
       for (const msg of offlineMessages) {
-        this.socketIoService.safeSendMessage(
-          InternalMessage.fromOfflineMsg(msg)
-        )
+        console.log(msg)
+        this.socketIoService.safeSendMessage(msg)
       }
     } catch (e) {
       logger.debug(`invalid token: ${e}`)
@@ -64,18 +62,12 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   @SubscribeMessage(messageToken)
   async handleMessage(
-    @MessageBody() data: CreateInternalMessageDto,
+    @MessageBody() data: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const msg = new InternalMessage(data).setSender(client.user.id)
-    
+    const msg = Message.new(data, client.user.id)
     this.socketIoService.safeSendMessage(msg)
-    
-    return new ACKMessage(
-      msg.msgId,
-      msg.senderId,
-      ACKMessageType.SERVER_RECEIVED
-    )
+    return Message.ServerACK(msg, ACKMsgType.DELIVERED)
   }
 
   @SubscribeMessage('joinRoom')

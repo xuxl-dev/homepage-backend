@@ -1,8 +1,7 @@
 import { Socket } from "socket.io";
 import { Messenger } from "./messenger";
 import { UserOfflineException } from "../internal-message/internal-message.service";
-import { EventEmitter } from "stream";
-import { ACKMessage } from "../internal-message/entities/ack-message.entity";
+import { Message } from "../internal-message/entities/message-new.entity";
 
 /**
  * SocketManager
@@ -13,9 +12,9 @@ import { ACKMessage } from "../internal-message/entities/ack-message.entity";
 export class SocketManager {
 
   private static _instance: SocketManager = new SocketManager()
-  onAckFailedCb: (msg: ACKMessage) => Promise<void>
+  onAckFailedCb: (msg: Message) => Promise<void>
 
-  init(onAckFailedCb:  (msg: ACKMessage) => Promise<void>) {
+  init(onAckFailedCb:  (msg: Message) => Promise<void>) {
     this.onAckFailedCb = onAckFailedCb
     return this
   }
