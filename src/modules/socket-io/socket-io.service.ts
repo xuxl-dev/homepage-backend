@@ -9,7 +9,7 @@ import { SocketManager } from './socket-mamager';
 import { UserOfflineException } from '../internal-message/internal-message.service';
 import { UnknownError } from './utils';
 import { MessageTimeoutException } from './messenger';
-import { Message } from '../internal-message/entities/message-new.entity';
+import { ACKMsgType, Message, MessageType } from '../internal-message/entities/message-new.entity';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -21,10 +21,13 @@ export class SocketIoService {
   ) { }
   
   roomManager = new RoomManager()
-  socketManager = SocketManager.instance().init(async (msg: Message) => {//TODO use strategy pattern
-    console.log(`Forwarding offline message ${msg.msgId}`)
+  socketManager = SocketManager.instance().init(async (msg: Message) => { //TODO use strategy pattern
     try {
-      await this.safeSendMessage(msg)
+      await this.safeSendMessage(msg, false)
+      // update read count
+      if (typeof msg.content != 'string' && msg.content.type === ACKMsgType.READ) { //clean this
+        await this.offlineMessageService.updateReadCount(msg.content.ackMsgId, msg.receiverId)
+      }
     } catch (e) {
       console.error(`Sending offline message ${msg.msgId} failed: `, e)
       throw e
@@ -42,7 +45,7 @@ export class SocketIoService {
    * @throws MessageTimeoutException
    * @throws UnknownError
    */
-  async sendMessageOrThrow(message: Message) {
+  async sendMessageOrFail(message: Message, requireAck = true) {
     const messenger = this.socketManager.getMessenger(message.receiverId)
 
     if (messenger._socket.user) {
@@ -52,26 +55,8 @@ export class SocketIoService {
 
     if (messenger) {
       console.log(`Sending online message ${message.msgId}`)
-      await messenger.sendMessageWithTimeout(message, 3000);
+      await messenger.sendMessageWithTimeout(message, 3000, requireAck);
     } else {
-      console.error(`Sending online message ${message.msgId} failed: `)
-      throw new UserOfflineException();
-    }
-  }
-
-  async sendMessageOrFail(message: Message) {
-    const messenger = this.socketManager.getMessenger(message.receiverId)
-
-    if (messenger._socket.user) {
-      message.senderId = messenger._socket.user?.id
-    } else throw new UnknownError()
-
-
-    if (messenger) {
-      console.log(`Sending online message ${message.msgId}`)
-      await messenger.sendMessageWithTimeout(message, 3000);
-    } else {
-      console.error(`Sending online message ${message.msgId} failed: `)
       throw new UserOfflineException();
     }
   }
@@ -108,9 +93,12 @@ export class SocketIoService {
     this.socketManager.delete(id);
   }
 
-  async safeSendMessage(msg: Message){
+  async safeSendMessage(msg: Message, requireAck = true){
     try {
-      await this.sendMessageOrFail(msg)
+      if(msg.type === MessageType.ACK) {
+        requireAck = false
+      }
+      await this.sendMessageOrFail(msg, requireAck)
     } catch (e) {
       if (e instanceof UserOfflineException || e instanceof MessageTimeoutException) {
         console.log(`Sending online message ${msg.msgId} failed, convert to offline message`)

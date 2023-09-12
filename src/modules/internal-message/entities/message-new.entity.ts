@@ -53,7 +53,10 @@ export class Message {
       }
     }
   })
-  content: string | object
+  content: string | {
+    ackMsgId: MsgId,
+    type: ACKMsgType,
+  }
 
   @Column()
   sentAt: Date = new Date()
@@ -61,6 +64,8 @@ export class Message {
   @Column('int')
   type: MessageType
 
+  @Column({default: 0})
+  hasReadCount: number = 0
 
   constructor() { }
 
@@ -75,7 +80,6 @@ export class Message {
     msg.senderId = toMessage.receiverId
     return msg
   }
-
 
   static new(createMessageDto: CreateMessageDto, senderId: number) {
     const msg = new Message()
