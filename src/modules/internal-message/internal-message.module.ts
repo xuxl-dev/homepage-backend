@@ -4,8 +4,6 @@ import { InternalMessageController } from './internal-message.controller';
 import { UsermetaModule } from '../usermeta/usermeta.module';
 import { SocketIoModule } from '../socket-io/socket-io.module';
 import { OfflineMessageModule } from '../offline-message/offline-message.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Message } from './entities/message-new.entity';
 
 @Module({
   imports: [UsermetaModule, SocketIoModule, OfflineMessageModule],

@@ -1,10 +1,24 @@
 import {  Socket, io } from 'socket.io-client';
 
-enum ACKMessageType {
-  SERVER_RECEIVED,   //服务器已接收
-  DELEVERED,  //已送达但未读
-  READ,       //已读
+export enum MessageType {
+  'plain-text',
+  'json',
+  'rich-text',
+  'packed',
+  'broadcast',
+  'ACK',
+  'unknown',
+  'e2ee',
+  'key-exchange',
+  'withdraw',
 }
+
+enum ACKMsgType {
+  'DELIVERED',
+  'RECEIVED',
+  'READ',
+}
+
 const socket = io('http://127.0.0.1:3001', {
   port: 3001,
   extraHeaders: {
@@ -21,23 +35,27 @@ socket.on('message', (message) => {
   console.log('Received message:', message);
 
   socket.emit('ack', {
-    "msgId":  message.msgId + 1000,
-    "senderId":2,
-    "receiverId":1,
-    "content":"123",
-    "type": ACKMessageType.DELEVERED,
-    "ackMsgId": message.msgId
+    msgId: message.msgId + 1000,
+    senderId: 2,
+    receiverId: 1,
+    content: {
+      ackMsgId: message.msgId,
+      type: ACKMsgType.RECEIVED, // received
+    },
+    type: MessageType.ACK,
   })
 
   //wait for 3 seconds
   setTimeout(() => {
     socket.emit('ack', {
-      "msgId": message.msgId + 1001,
-      "senderId":2,
-      "receiverId":1,
-      "content":"123",
-      "type": ACKMessageType.READ, // read
-      "ackMsgId": message.msgId
+      msgId: message.msgId + 1000,
+      senderId: 2,
+      receiverId: 1,
+      content: {
+        ackMsgId: message.msgId,
+        type: ACKMsgType.READ, // received
+      },
+      type: MessageType.ACK,
     })
   }, 3000)
 

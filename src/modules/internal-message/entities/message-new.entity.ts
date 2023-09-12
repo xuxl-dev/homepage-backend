@@ -2,6 +2,7 @@ import { Snowflake } from 'src/modules/socket-io/utils';
 import { CreateMessageDto } from '../dto/create-message.dto';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 const snowflake = new Snowflake(3, 1)
+
 export enum MessageType {
   'plain-text',
   'json',
@@ -15,26 +16,44 @@ export enum MessageType {
   'withdraw',
 }
 
+export enum ACKMsgType {
+  'DELIVERED',
+  'RECEIVED',
+  'READ',
+}
+
 export type MsgId = string
 
 @Entity()
 export class Message {
   @PrimaryColumn('bigint', {
-    transformer: {
-      from: (value: string) => BigInt(value),
-      to: (value: MsgId) => value.toString(),
-    }
+
   })
   msgId: MsgId = snowflake.nextId().toString()
 
   @Column()
   senderId: number
-  
+
   @Column()
   receiverId: number
 
-  @Column()
-  content: string
+  // Need to swithc to MongoDB to support rich text
+  @Column('varchar', {
+    transformer: {
+      to: (value: string | object) => {
+        if (typeof value === 'string') return value
+        return JSON.stringify(value)
+      },
+      from: (value: string) => {
+        try {
+          return JSON.parse(value)
+        } catch (error) {
+          return value
+        }
+      }
+    }
+  })
+  content: string | object
 
   @Column()
   sentAt: Date = new Date()
@@ -45,14 +64,18 @@ export class Message {
 
   constructor() { }
 
-  static ACK(toMessage: Message) {
+  static ServerACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
     msg.type = MessageType.ACK
-    msg.content = toMessage.msgId.toString()
+    msg.content = JSON.stringify({
+      ackMsgId: toMessage.msgId.toString(),
+      type,
+    })
     msg.receiverId = toMessage.senderId
     msg.senderId = toMessage.receiverId
     return msg
   }
+
 
   static new(createMessageDto: CreateMessageDto, senderId: number) {
     const msg = new Message()
@@ -65,12 +88,19 @@ export class Message {
 
   static parse(object) {
     const msg = new Message()
-    msg.msgId = BigInt(object.msgId).toString()
     msg.receiverId = object.receiverId
     msg.content = object.content
     msg.type = object.type
     msg.senderId = object.senderId
-    msg.sentAt = new Date(object.sentAt)
+    return msg
+  }
+
+  static pack(object) {
+    const msg = new Message()
+    msg.receiverId = object.receiverId
+    msg.content = JSON.stringify(object.content)
+    msg.type = MessageType.packed
+    msg.senderId = object.senderId
     return msg
   }
 

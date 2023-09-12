@@ -1,20 +1,18 @@
 import { Socket } from "socket.io";
-import { InternalMessage, MsgId } from "../internal-message/entities/internal-message.entity";
 import { ACKToken, messageToken } from "./Tokens";
-import { ACKMessage, ACKMessageType } from "../internal-message/entities/ack-message.entity";
 import { backOff } from "src/utils/utils";
 import { SocketManager } from "./socket-mamager";
 import { EventEmitter } from "stream";
 import { snowflake } from "./snowflake";
-import { Message } from "../internal-message/entities/message-new.entity";
+import { ACKMsgType, Message, MessageType, MsgId } from "../internal-message/entities/message-new.entity";
 
 export class Messenger {
-  private pendingMessages: Map<MsgId, { resolve: (msg: ACKMessage) => void; reject: (error: Error) => void }> = new Map()
+  private pendingMessages: Map<MsgId, { resolve: (msg: Message) => void; reject: (error: Error) => void }> = new Map()
   _socket: Socket
   socketManager: SocketManager = SocketManager.instance()
-  onAckMsgFailCallback: (msg: ACKMessage) => Promise<void>
+  onAckMsgFailCallback: (msg: Message) => Promise<void>
 
-  constructor(socket: Socket, onMsgFail: (msg: ACKMessage) => Promise<void>) {
+  constructor(socket: Socket, onMsgFail: (msg: Message) => Promise<void>) {
     this._socket = socket
     this._socket.on(ACKToken, this.handleMessage.bind(this))
     this.onAckMsgFailCallback = onMsgFail
@@ -28,7 +26,7 @@ export class Messenger {
    * Alice <-- server           <-- ACKMessage(read)      --- Bob
    * @param response 
    */
-  private async handleMessage(response: ACKMessage) {
+  private async handleMessage(response: Message) {
     try {
       if (!response) {
         throw new Error('Invalid message received') //TODO: add more validation
@@ -36,12 +34,14 @@ export class Messenger {
       response.msgId = snowflake.nextId().toString()
       response.senderId = this._socket.user?.id
       response.sentAt = new Date()
-      const { msgId, senderId, receiverId, _type: type, ackMsgId } = response
+      const { msgId, senderId, receiverId, type: _type, content } = response
+      console.log('content:', content)
+      const { ackMsgId, type } = content as unknown as { ackMsgId: MsgId, type: ACKMsgType }
       console.log(
         'ACK Message received for msg: ', ackMsgId, 
         'from ', senderId, //FIXME this is undefined, fix it
         'to', receiverId, 
-        'type', ACKMessageType[type])
+        'type', ACKMsgType[type])
       if (this.pendingMessages.has(ackMsgId)) {
         const { resolve } = this.pendingMessages.get(ackMsgId)
         this.pendingMessages.delete(ackMsgId)
@@ -60,8 +60,8 @@ export class Messenger {
     }
   }
 
-  sendMessageWithTimeout(message: InternalMessage, timeout: number = 3000): Promise<ACKMessage> {
-    return new Promise<ACKMessage>((resolve, reject) => {
+  sendMessageWithTimeout(message: Message, timeout: number = 3000): Promise<Message> {
+    return new Promise<Message>((resolve, reject) => {
       setTimeout(() => {
         this.pendingMessages.delete(message.msgId)
         reject(new MessageTimeoutException())
@@ -72,19 +72,7 @@ export class Messenger {
     });
   }
 
-  sendMessageWithTimeout2(message: Message, timeout: number = 3000): Promise<ACKMessage> {
-    return new Promise<ACKMessage>((resolve, reject) => {
-      setTimeout(() => {
-        this.pendingMessages.delete(message.msgId)
-        reject(new MessageTimeoutException())
-      }, timeout)
-
-      this.pendingMessages.set(message.msgId, { resolve, reject })
-      this._socket.emit(messageToken, message)
-    });
-  }
-
-  sendMessageBackoffWithTimeout(message: InternalMessage, timeout: number = 1000, maxRetries = 3, retryInterval = 100): Promise<ACKMessage> {
+  sendMessageBackoffWithTimeout(message: Message, timeout: number = 1000, maxRetries = 3, retryInterval = 100): Promise<Message> {
     return backOff(() => this.sendMessageWithTimeout(message, timeout), retryInterval, maxRetries)
   }
 }
