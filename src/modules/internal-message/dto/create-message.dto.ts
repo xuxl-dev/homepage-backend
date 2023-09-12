@@ -1,4 +1,4 @@
-import { MessageType } from "../entities/message-new"
+import { MessageType } from "../entities/message-new.entity"
 
 export class CreateMessageDto {
   receiverId: number

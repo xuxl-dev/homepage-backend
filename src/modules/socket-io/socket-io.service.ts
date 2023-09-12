@@ -13,6 +13,7 @@ import { User } from '../user/entities/user.entity';
 import { UnknownError } from './utils';
 import { MessageTimeoutException } from './messenger';
 import { ACKMessage } from '../internal-message/entities/ack-message.entity';
+import { Message } from '../internal-message/entities/message-new.entity';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -69,6 +70,23 @@ export class SocketIoService {
     }
   }
 
+  async sendMessageOrThrow2(message: Message) {
+    const messenger = this.socketManager.getMessenger(message.receiverId)
+
+    if (messenger._socket.user) {
+      message.senderId = messenger._socket.user?.id
+    } else throw new UnknownError()
+
+
+    if (messenger) {
+      console.log(`Sending online message ${message.msgId}`)
+      await messenger.sendMessageWithTimeout2(message, 3000);
+    } else {
+      console.error(`Sending online message ${message.msgId} failed: `)
+      throw new UserOfflineException();
+    }
+  }
+
   createRoom(createSocketIoDto: CreateRoomDto) {
     this.chatGroupService.create(createSocketIoDto);
   }
@@ -108,6 +126,21 @@ export class SocketIoService {
       if (e instanceof UserOfflineException || e instanceof MessageTimeoutException) {
         console.log(`Sending online message ${msg.msgId} failed, convert to offline message`)
         await this.offlineMessageService.sendMessageOrFail(msg)
+        console.log(`Sending offline message ${msg.msgId} success`)
+      } else {
+        console.error(`Sending online message ${msg.msgId} failed: `, e)
+        throw e
+      }
+    }
+  }
+
+  async safeSendMessage2(msg: Message){
+    try {
+      await this.sendMessageOrThrow2(msg)
+    } catch (e) {
+      if (e instanceof UserOfflineException || e instanceof MessageTimeoutException) {
+        console.log(`Sending online message ${msg.msgId} failed, convert to offline message`)
+        await this.offlineMessageService.sendMessageOrFail2(msg)
         console.log(`Sending offline message ${msg.msgId} success`)
       } else {
         console.error(`Sending online message ${msg.msgId} failed: `, e)

@@ -6,6 +6,7 @@ import { backOff } from "src/utils/utils";
 import { SocketManager } from "./socket-mamager";
 import { EventEmitter } from "stream";
 import { snowflake } from "./snowflake";
+import { Message } from "../internal-message/entities/message-new.entity";
 
 export class Messenger {
   private pendingMessages: Map<MsgId, { resolve: (msg: ACKMessage) => void; reject: (error: Error) => void }> = new Map()
@@ -60,6 +61,18 @@ export class Messenger {
   }
 
   sendMessageWithTimeout(message: InternalMessage, timeout: number = 3000): Promise<ACKMessage> {
+    return new Promise<ACKMessage>((resolve, reject) => {
+      setTimeout(() => {
+        this.pendingMessages.delete(message.msgId)
+        reject(new MessageTimeoutException())
+      }, timeout)
+
+      this.pendingMessages.set(message.msgId, { resolve, reject })
+      this._socket.emit(messageToken, message)
+    });
+  }
+
+  sendMessageWithTimeout2(message: Message, timeout: number = 3000): Promise<ACKMessage> {
     return new Promise<ACKMessage>((resolve, reject) => {
       setTimeout(() => {
         this.pendingMessages.delete(message.msgId)

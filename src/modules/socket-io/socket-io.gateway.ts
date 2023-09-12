@@ -8,6 +8,8 @@ import { messageToken } from './Tokens';
 import { UserOfflineException } from '../internal-message/internal-message.service';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 import { CreateInternalMessageDto } from '../internal-message/dto/create-internal-message.dto';
+import { Message } from '../internal-message/entities/message-new.entity';
+import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 
 
 const logger = new Logger('SocketIoGateway')
@@ -38,12 +40,10 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
       this.socketIoService.addSocket(user.id, socket)
       logger.debug(`user connected: ${user.id}`)
       // try retrieve offline messages
-      const offlineMessages = await this.offlineMessageService.retrive(user.id)
+      const offlineMessages = await this.offlineMessageService.retrive2(user.id)
       console.log(`user ${user.id} has ${offlineMessages.length} offline messages, trying resending`)
       for (const msg of offlineMessages) {
-        this.socketIoService.safeSendMessage(
-          InternalMessage.fromOfflineMsg(msg)
-        )
+        this.socketIoService.safeSendMessage2(msg)
       }
     } catch (e) {
       logger.debug(`invalid token: ${e}`)
@@ -64,18 +64,12 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   @SubscribeMessage(messageToken)
   async handleMessage(
-    @MessageBody() data: CreateInternalMessageDto,
+    @MessageBody() data: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const msg = new InternalMessage(data).setSender(client.user.id)
-    
-    this.socketIoService.safeSendMessage(msg)
-    
-    return new ACKMessage(
-      msg.msgId,
-      msg.senderId,
-      ACKMessageType.SERVER_RECEIVED
-    )
+    const msg2 = Message.new(data, client.user.id)
+    this.socketIoService.safeSendMessage2(msg2)
+    return Message.ACK(msg2)
   }
 
   @SubscribeMessage('joinRoom')

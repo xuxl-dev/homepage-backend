@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OfflineMessage } from './entities/offline-message.entity';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
+import { Message } from '../internal-message/entities/message-new.entity';
 
 
 /**
@@ -21,6 +22,8 @@ export class OfflineMessageService {
     private readonly offlineMessageRepository: Repository<OfflineMessage>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>
   ) { }
 
   /** 
@@ -33,6 +36,10 @@ export class OfflineMessageService {
 
   async sendMessageOrFail(message: InternalMessage) {
     return await this.offlineMessageRepository.save(OfflineMessage.fromInternal(message))
+  }
+
+  async sendMessageOrFail2(message: Message) {
+    return await this.messageRepository.save(message)
   }
   /**
    * retrieve offline messages for a user including chat and chat group
@@ -53,6 +60,10 @@ export class OfflineMessageService {
       ret = ret.concat(await this.offlineMessageRepository.find({ where: { receiverId: group.id } })) //TODO: test this, check this
     })
     return ret
+  }
+
+  async retrive2(userId: number) {
+    return await this.messageRepository.find({ where: { receiverId: userId } })
   }
 
   async deleteBefore(date: Date){
