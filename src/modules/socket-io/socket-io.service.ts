@@ -25,7 +25,7 @@ export class SocketIoService {
     try {
       await this.safeSendMessage(msg, false)
       // update read count
-      if (typeof msg.content != 'string' && msg.content.type === ACKMsgType.READ) {
+      if (typeof msg.content != 'string' && msg.content.type === ACKMsgType.READ) { //clean this
         await this.offlineMessageService.updateReadCount(msg.content.ackMsgId, msg.receiverId)
       }
     } catch (e) {

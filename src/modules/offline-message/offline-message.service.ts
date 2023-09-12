@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Message } from '../internal-message/entities/message-new.entity';
 
@@ -38,8 +38,20 @@ export class OfflineMessageService {
    * if marked as not to delete, do not delete it)
    * @param userId 
    */
-  async retrive(userId: number) {
-    return await this.messageRepository.find({ where: { receiverId: userId } })
+  async retrive(userId: number, afterDate?: Date, pagination?: { page: number, pageSize: number }) {
+    return await this.messageRepository.find(
+      {
+        where: {
+          receiverId: userId,
+          sentAt: MoreThanOrEqual(afterDate)
+        },
+        order: {
+          sentAt: 'DESC'
+        },
+        take: pagination?.pageSize,
+        skip: pagination?.page * pagination?.pageSize
+      }
+    )
   }
 
   async deleteBefore(date: Date) {

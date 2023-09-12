@@ -8,6 +8,7 @@ import { OfflineMessageService } from '../offline-message/offline-message.servic
 import { ACKMsgType, Message } from '../internal-message/entities/message-new.entity';
 import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
+import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 
 
 const logger = new Logger('SocketIoGateway')
@@ -37,13 +38,6 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
       socket.user = user
       this.socketIoService.addSocket(user.id, socket)
       logger.debug(`user connected: ${user.id}`)
-      // try retrieve offline messages
-      const offlineMessages = await this.offlineMessageService.retrive(user.id)
-      console.log(`user ${user.id} has ${offlineMessages.length} offline messages, trying resending`)
-      for (const msg of offlineMessages) {
-        console.log(msg)
-        this.socketIoService.safeSendMessage(msg)
-      }
     } catch (e) {
       logger.debug(`invalid token: ${e}`)
       socket.emit('connected', 'invalid token')
@@ -80,6 +74,26 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
       return msg
     } else {
       throw new Error('Message not found')
+    }
+  }
+
+  @SubscribeMessage('retrive') 
+  async retriveMessage(
+    @MessageBody() data: RetriveMessageDto,
+    @ConnectedSocket() client: Socket,
+  ){
+
+    const offlineMessages = await this.offlineMessageService.retrive(
+      client.user.id,
+      data.afterDate,
+      {
+        page: data.page,
+        pageSize: data.pageSize
+      }
+    )
+    for (const msg of offlineMessages) {
+      console.log(msg)
+      this.socketIoService.safeSendMessage(msg)
     }
   }
 
