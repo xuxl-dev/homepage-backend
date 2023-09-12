@@ -42,16 +42,34 @@ export class OfflineMessageService {
     return await this.messageRepository.find({ where: { receiverId: userId } })
   }
 
-  async deleteBefore(date: Date){
+  async deleteBefore(date: Date) {
     // 查询并删除过期消息
     const expiredMessages = await this.messageRepository.createQueryBuilder()
-    .where('createdAt <= :date', { date })
-    .delete()
-    .execute();
+      .where('createdAt <= :date', { date })
+      .delete()
+      .execute();
 
     return expiredMessages
   }
 
-  
+  async findOne(id: string) {
+    try {
+      return await this.messageRepository.findOneOrFail({ where: { msgId: id } })
+    } catch (error) {
+      return null
+    }
+  }
 
+  /**
+   * 
+   * @param id 
+   * @param receiverId not used, but for future use
+   */
+  async updateReadCount(id: string, receiverId: number) {
+    const msg = await this.findOne(id)
+    if (msg) {
+      msg.hasReadCount += 1
+      await this.messageRepository.save(msg)
+    }
+  }
 }

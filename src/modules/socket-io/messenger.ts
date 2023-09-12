@@ -10,20 +10,20 @@ export class Messenger {
   private pendingMessages: Map<MsgId, { resolve: (msg: Message) => void; reject: (error: Error) => void }> = new Map()
   _socket: Socket
   socketManager: SocketManager = SocketManager.instance()
-  onAckMsgFailCallback: (msg: Message) => Promise<void>
+  onAckMsgCallback: (msg: Message) => Promise<void>
 
   constructor(socket: Socket, onMsgFail: (msg: Message) => Promise<void>) {
     this._socket = socket
     this._socket.on(ACKToken, this.handleMessage.bind(this))
-    this.onAckMsgFailCallback = onMsgFail
+    this.onAckMsgCallback = onMsgFail
   }
 
   /**
-   * Alice --- InternalMessage  --> server                --> Bob
-   * 
-   * Alice <-- server           <-- ACKMessage(delivered) --- Bob
-   * 
-   * Alice <-- server           <-- ACKMessage(read)      --- Bob
+   * Alice --- Message   --> server                --> Bob
+   *
+   * Alice <-- server    <-- ACKMessage(delivered) --- Bob
+   *
+   * Alice <-- server    <-- ACKMessage(read)      --- Bob
    * @param response 
    */
   private async handleMessage(response: Message) {
@@ -47,20 +47,25 @@ export class Messenger {
         this.pendingMessages.delete(ackMsgId)
         resolve(response)
       }
-      const sender = this.socketManager.getSocket(receiverId);
-      if (sender) {
-        sender.emit('ack', response);
-      } else {
-        // send offline ack
-        console.log('User is offline, sending offline ack')
-        await this.onAckMsgFailCallback(response)
-      }
+      // const sender = this.socketManager.getSocket(receiverId);
+      // if (sender) {
+      //   sender.emit('ack', response);
+      // } else {
+      //   // send offline ack
+      //   console.log('User is offline, sending offline ack')
+      //   await this.onAckMsgCallback(response)
+      // }
+      await this.onAckMsgCallback(response)
     } catch (error) {
       console.error('Error while handling message:', error)
     }
   }
 
-  sendMessageWithTimeout(message: Message, timeout: number = 3000): Promise<Message> {
+  sendMessageWithTimeout(message: Message, timeout: number = 3000, requireAck = true): Promise<Message> {
+    if (!requireAck) {
+      this._socket.emit(messageToken, message)
+      return Promise.resolve(null)
+    }
     return new Promise<Message>((resolve, reject) => {
       setTimeout(() => {
         this.pendingMessages.delete(message.msgId)
