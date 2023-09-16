@@ -48,11 +48,6 @@ export class SocketIoService {
   async sendMessageOrFail(message: Message, requireAck = true) {
     const messenger = this.socketManager.getMessenger(message.receiverId)
 
-    if (messenger._socket.user) {
-      message.senderId = messenger._socket.user?.id
-    } else throw new UnknownError()
-
-
     if (messenger) {
       console.log(`Sending online message ${message.msgId}`)
       await messenger.sendMessageWithTimeout(message, 3000, requireAck);
@@ -78,7 +73,7 @@ export class SocketIoService {
   }
 
   getJwtTokenFromSocket(socket: Socket) {
-    return socket.handshake.headers.authorization;
+    return socket.handshake.headers.authorization || socket.handshake.auth.token;
   }
 
   async getUserFromSocket(socket: Socket) {
@@ -86,6 +81,11 @@ export class SocketIoService {
   }
 
   addSocket(id: number, socket: Socket) {
+    // if already exist, disconnect the old one
+    const oldSocket = this.socketManager.getSocket(id)
+    if (oldSocket) {
+      oldSocket.disconnect()
+    }
     this.socketManager.set(id, socket)
   }
 

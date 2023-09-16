@@ -61,6 +61,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
   ) {
     const msg = Message.new(data, client.user.id)
+    // console.log(msg)
     this.socketIoService.safeSendMessage(msg)
     return Message.ServerACK(msg, ACKMsgType.DELIVERED)
   }

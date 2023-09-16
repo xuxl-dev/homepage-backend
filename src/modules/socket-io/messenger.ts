@@ -34,9 +34,11 @@ export class Messenger {
       response.msgId = snowflake.nextId().toString()
       response.senderId = this._socket.user?.id
       response.sentAt = new Date()
-      const { msgId, senderId, receiverId, type: _type, content } = response
-      console.log('content:', content)
-      const { ackMsgId, type } = content as unknown as { ackMsgId: MsgId, type: ACKMsgType }
+      let { msgId, senderId, receiverId, type: _type, content } = response
+      if (typeof content === 'string') {
+        content = JSON.parse(content)
+      }
+      const { ackMsgId, type } = content as unknown as { ackMsgId: MsgId, type: number }
       console.log(
         'ACK Message received for msg: ', ackMsgId, 
         'from ', senderId, //FIXME this is undefined, fix it
