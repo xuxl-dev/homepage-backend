@@ -38,7 +38,7 @@ export class Message {
   receiverId: number
 
   // Need to swithc to MongoDB to support rich text
-  @Column('varchar', {
+  @Column('text', {
     transformer: {
       to: (value: string | object) => {
         if (typeof value === 'string') return value
