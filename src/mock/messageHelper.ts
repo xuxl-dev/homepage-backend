@@ -6,6 +6,7 @@ class MessageHelper extends EventEmitter {
   server_addr: string
   port: number
   token: string
+  onMsgCallbacks: Map<string, ((msg: object) => void)[]> = new Map()
 
   constructor(server: string) {
     super()
@@ -19,6 +20,9 @@ class MessageHelper extends EventEmitter {
       port: this.port,
       extraHeaders: {
         authorization: this.token,
+      },
+      auth:{
+        token: this.token
       },
       autoConnect: true,
     });
@@ -45,7 +49,13 @@ class MessageHelper extends EventEmitter {
   }
 
   subscribe(channel: string, callback: (msg: object) => void | PromiseLike<void>) {
-    this.socket?.on(channel, callback)
+    if (!this.onMsgCallbacks.has(channel)) {
+      this.onMsgCallbacks.set(channel, [])
+      this.socket?.on(channel, (msg: object) => {
+        this.onMsgCallbacks.get(channel)?.forEach(cb => cb(msg))
+      })
+    }
+    this.onMsgCallbacks.get(channel).push(callback)
   }
 
   subscribeOnce(channel: string, callback: (msg: object) => void | PromiseLike<void>) {
@@ -53,6 +63,22 @@ class MessageHelper extends EventEmitter {
   }
 
   unsubscribe(channel: string, callback: (msg: object) => void | PromiseLike<void>) {
-    this.socket?.off(channel, callback)
+    this.onMsgCallbacks.set(channel, this.onMsgCallbacks.get(channel)?.filter(cb => cb !== callback))
+  }
+
+  onPredicate(channel: string, predicate: (msg: object) => boolean, callback: (msg: object) => void | PromiseLike<void>) {
+    this.subscribe(channel, (msg) => {
+      if (predicate(msg)) {
+        callback(msg)
+      }
+    })
+  }
+
+  onPredicateOnce(channel: string, predicate: (msg: object) => boolean, callback: (msg: object) => void | PromiseLike<void>) {
+    this.subscribeOnce(channel, (msg) => {
+      if (predicate(msg)) {
+        callback(msg)
+      }
+    })
   }
 }
