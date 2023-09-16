@@ -35,7 +35,6 @@ socket.on('message', (message) => {
   console.log('Received message:', message);
 
   socket.emit('ack', {
-    msgId: message.msgId + 1000,
     senderId: 2,
     receiverId: 1,
     content: {
@@ -48,7 +47,6 @@ socket.on('message', (message) => {
   //wait for 3 seconds
   setTimeout(() => {
     socket.emit('ack', {
-      msgId: message.msgId + 1000,
       senderId: 2,
       receiverId: 1,
       content: {
