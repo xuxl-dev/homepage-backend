@@ -3,12 +3,13 @@ import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { messageToken } from './Tokens';
-import { UserOfflineException } from '../internal-message/internal-message.service';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 import { ACKMsgType, Message } from '../internal-message/entities/message-new.entity';
 import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 
 const logger = new Logger('SocketIoGateway')
@@ -22,10 +23,11 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private readonly socketIoService: SocketIoService,
-    private readonly offlineMessageService : OfflineMessageService
-  ) {}
+    private readonly offlineMessageService: OfflineMessageService,
+    @InjectQueue('message') private readonly messageQueue: Queue,
+  ) { }
 
-  afterInit(server) {}
+  afterInit(server) { }
   handleDisconnect(client) {
     logger.debug(`user disconnected: ${client.user.id}`)
     this.socketIoService.removeSocket(client.user.id)
@@ -54,22 +56,27 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
       data
     };
   }
-
+  /**
+   * for all message, forward if possible, fall back to offline message
+   * but ack needs no ack to it
+   * @param data 
+   * @param client 
+   * @returns 
+   */
   @SubscribeMessage(messageToken)
   async handleMessage(
     @MessageBody() data: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
     const msg = Message.new(data, client.user.id)
-    // console.log(msg)
     this.socketIoService.safeSendMessage(msg)
-    return Message.ServerACK(msg, ACKMsgType.DELIVERED)
+    return Message.ACK(msg, ACKMsgType.DELIVERED)
   }
 
   @SubscribeMessage('syncMessage')
   async syncMessage(
     @MessageBody() data: QueryMessageDto,
-  ){
+  ) {
     const msg = await this.offlineMessageService.findOne(data.id)
     if (msg) {
       return msg
@@ -78,11 +85,11 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
   }
 
-  @SubscribeMessage('retrive') 
+  @SubscribeMessage('retrive')
   async retriveMessage(
     @MessageBody() data: RetriveMessageDto,
     @ConnectedSocket() client: Socket,
-  ){
+  ) {
 
     const offlineMessages = await this.offlineMessageService.retrive(
       client.user.id,
@@ -124,3 +131,5 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     return 'left'
   }
 }
+
+

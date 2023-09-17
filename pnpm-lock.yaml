@@ -80,6 +80,9 @@ dependencies:
   class-validator:
     specifier: ^0.14.0
     version: 0.14.0
+  crypto-js:
+    specifier: ^4.1.1
+    version: 4.1.1
   generic-pool:
     specifier: ^3.9.0
     version: 3.9.0
@@ -89,6 +92,9 @@ dependencies:
   ioredis:
     specifier: ^5.3.2
     version: 5.3.2
+  jsencrypt:
+    specifier: ^3.3.2
+    version: 3.3.2
   mysql2:
     specifier: ^2.3.3
     version: 2.3.3
@@ -2604,6 +2610,10 @@ packages:
       which: 2.0.2
     dev: true
 
+  /crypto-js@4.1.1:
+    resolution: {integrity: sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==}
+    dev: false
+
   /date-fns@2.30.0:
     resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
     engines: {node: '>=0.11'}
@@ -4121,6 +4131,10 @@ packages:
     hasBin: true
     dependencies:
       argparse: 2.0.1
+
+  /jsencrypt@3.3.2:
+    resolution: {integrity: sha512-arQR1R1ESGdAxY7ZheWr12wCaF2yF47v5qpB76TtV64H1pyGudk9Hvw8Y9tb/FiTIaaTRUyaSnm5T/Y53Ghm/A==}
+    dev: false
 
   /jsesc@2.5.2:
     resolution: {integrity: sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==}

@@ -21,18 +21,7 @@ export class SocketIoService {
   ) { }
   
   roomManager = new RoomManager()
-  socketManager = SocketManager.instance().init(async (msg: Message) => { //TODO use strategy pattern
-    try {
-      await this.safeSendMessage(msg, false)
-      // update read count
-      if (typeof msg.content != 'string' && msg.content.type === ACKMsgType.READ) { //clean this
-        await this.offlineMessageService.updateReadCount(msg.content.ackMsgId, msg.receiverId)
-      }
-    } catch (e) {
-      console.error(`Sending offline message ${msg.msgId} failed: `, e)
-      throw e
-    }
-  });
+  socketManager = SocketManager.instance()
 
   @WebSocketServer()
   io: Server;
@@ -49,7 +38,8 @@ export class SocketIoService {
     const messenger = this.socketManager.getMessenger(message.receiverId)
 
     if (messenger) {
-      console.log(`Sending online message ${message.msgId}`)
+      console.log(`Sending online message`, message.msgId)
+      // print stack trace
       await messenger.sendMessageWithTimeout(message, 3000, requireAck);
     } else {
       throw new UserOfflineException();
