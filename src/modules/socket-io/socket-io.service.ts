@@ -21,19 +21,7 @@ export class SocketIoService {
   ) { }
   
   roomManager = new RoomManager()
-  socketManager = SocketManager.instance().init(async (msg: Message) => { //TODO use strategy pattern
-    try {
-      console.log(`Forwarding ack`, msg.msgId)
-      await this.safeSendMessage(msg, false)
-      // update read count
-      if (typeof msg.content != 'string' && msg.content.type === ACKMsgType.READ) { //clean this
-        await this.offlineMessageService.updateReadCount(msg.content.ackMsgId, msg.receiverId)
-      }
-    } catch (e) {
-      console.error(`Sending offline message ${msg.msgId} failed: `, e)
-      throw e
-    }
-  });
+  socketManager = SocketManager.instance()
 
   @WebSocketServer()
   io: Server;

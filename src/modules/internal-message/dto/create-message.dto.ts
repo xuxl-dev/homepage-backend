@@ -4,3 +4,9 @@ export class CreateMessageDto {
   content: string
   type: MessageType
 }
+
+export class CreateMessageDto2 {
+  receiverId: number
+  content: string
+  flag: number
+}

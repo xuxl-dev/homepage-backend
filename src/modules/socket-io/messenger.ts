@@ -10,12 +10,11 @@ export class Messenger {
   private pendingMessages: Map<MsgId, { resolve: (msg: Message) => void; reject: (error: Error) => void }> = new Map()
   _socket: Socket
   socketManager: SocketManager = SocketManager.instance()
-  onAckMsgCallback: (msg: Message) => Promise<void>
 
-  constructor(socket: Socket, onMsgFail: (msg: Message) => Promise<void>) {
+  constructor(socket: Socket) {
     this._socket = socket
     this._socket.on(messageToken, this.handleMessage.bind(this))
-    this.onAckMsgCallback = onMsgFail
+    // this.onAckMsgCallback = onMsgFail
   }
 
   /**
@@ -52,15 +51,7 @@ export class Messenger {
         this.pendingMessages.delete(ackMsgId)
         resolve(response)
       }
-      // const sender = this.socketManager.getSocket(receiverId);
-      // if (sender) {
-      //   sender.emit('ack', response);
-      // } else {
-      //   // send offline ack
-      //   console.log('User is offline, sending offline ack')
-      //   await this.onAckMsgCallback(response)
-      // }
-      await this.onAckMsgCallback(response)
+
     } catch (error) {
       console.error('Error while handling message:', error)
     }

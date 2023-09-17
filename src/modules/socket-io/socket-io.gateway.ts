@@ -22,10 +22,10 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private readonly socketIoService: SocketIoService,
-    private readonly offlineMessageService : OfflineMessageService
-  ) {}
+    private readonly offlineMessageService: OfflineMessageService
+  ) { }
 
-  afterInit(server) {}
+  afterInit(server) { }
   handleDisconnect(client) {
     logger.debug(`user disconnected: ${client.user.id}`)
     this.socketIoService.removeSocket(client.user.id)
@@ -54,7 +54,13 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
       data
     };
   }
-
+  /**
+   * for all message, forward if possible, fall back to offline message
+   * but ack needs no ack to it
+   * @param data 
+   * @param client 
+   * @returns 
+   */
   @SubscribeMessage(messageToken)
   async handleMessage(
     @MessageBody() data: CreateMessageDto,
@@ -63,18 +69,16 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     // TODO clean this
     // Refactor all message handling by using pipeline
     // do not process ack here
-    if (data.type === MessageType.ACK) {
-      return
-    }
+
     const msg = Message.new(data, client.user.id)
     this.socketIoService.safeSendMessage(msg)
-    return Message.ServerACK(msg, ACKMsgType.DELIVERED)
+    return Message.ACK(msg, ACKMsgType.DELIVERED)
   }
 
   @SubscribeMessage('syncMessage')
   async syncMessage(
     @MessageBody() data: QueryMessageDto,
-  ){
+  ) {
     const msg = await this.offlineMessageService.findOne(data.id)
     if (msg) {
       return msg
@@ -83,11 +87,11 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
   }
 
-  @SubscribeMessage('retrive') 
+  @SubscribeMessage('retrive')
   async retriveMessage(
     @MessageBody() data: RetriveMessageDto,
     @ConnectedSocket() client: Socket,
-  ){
+  ) {
 
     const offlineMessages = await this.offlineMessageService.retrive(
       client.user.id,

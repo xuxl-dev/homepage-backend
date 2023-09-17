@@ -12,12 +12,6 @@ import { Message } from "../internal-message/entities/message-new.entity";
 export class SocketManager {
 
   private static _instance: SocketManager = new SocketManager()
-  onAckFailedCb: (msg: Message) => Promise<void>
-
-  init(onAckFailedCb:  (msg: Message) => Promise<void>) {
-    this.onAckFailedCb = onAckFailedCb
-    return this
-  }
 
   public static instance() {
     return this._instance
@@ -37,7 +31,7 @@ export class SocketManager {
   private messengerToUserMap: Map<Messenger, number> = new Map()
 
   set(user: number, socket: Socket) {
-    const messgener = new Messenger(socket, this.onAckFailedCb)
+    const messgener = new Messenger(socket)
     socket.messenger = messgener
     this.userToMessengerMap.set(user, messgener)
     this.messengerToUserMap.set(messgener, user)

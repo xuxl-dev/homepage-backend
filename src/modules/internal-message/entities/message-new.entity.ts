@@ -16,6 +16,18 @@ export enum MessageType {
   'withdraw',
 }
 
+export enum MessageFlag {
+  'NONE' = 0,   
+  'DO_NOT_STORE' = 1 << 0, // do not store this message in database, may fail to deliver
+  'IS_ACK' = 1 << 1, // this message is an ACK message
+  'IS_BROADCAST' = 1 << 2, // this message is a broadcast message
+  'IS_E2EE' = 1 << 3, // this message is encrypted
+  'IS_KEY_EXCHANGE' = 1 << 4, // this message is a key exchange message
+  'IS_WITHDRAW' = 1 << 5, // this message is a withdraw message
+  'IS_COMPLEX' = 1 << 6, // this message is a complex message, the content is a json string
+  //...
+}
+
 export enum ACKMsgType {
   'DELIVERED',
   'RECEIVED',
@@ -26,9 +38,7 @@ export type MsgId = string
 
 @Entity()
 export class Message {
-  @PrimaryColumn('bigint', {
-
-  })
+  @PrimaryColumn('bigint')
   msgId: MsgId = snowflake.nextId().toString()
 
   @Column()
@@ -67,9 +77,12 @@ export class Message {
   @Column({default: 0})
   hasReadCount: number = 0
 
+  @Column({default: 0})
+  flag: number = MessageFlag.NONE
+
   constructor() { }
 
-  static ServerACK(toMessage: Message, type: ACKMsgType) {
+  static ACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
     msg.type = MessageType.ACK
     msg.content = JSON.stringify({
@@ -98,14 +111,4 @@ export class Message {
     msg.senderId = object.senderId
     return msg
   }
-
-  static pack(object) {
-    const msg = new Message()
-    msg.receiverId = object.receiverId
-    msg.content = JSON.stringify(object.content)
-    msg.type = MessageType.packed
-    msg.senderId = object.senderId
-    return msg
-  }
-
 }
