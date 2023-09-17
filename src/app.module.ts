@@ -77,9 +77,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         port: 6379,
       },
     }),
-    BullModule.registerQueue({
-      name: 'internal-message',
-    }),
     EventEmitterModule.forRoot()
   ],
   controllers: [AppController],

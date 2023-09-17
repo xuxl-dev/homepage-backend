@@ -23,6 +23,7 @@ export class Messenger {
    * Alice <-- server    <-- ACKMessage(delivered) --- Bob
    *
    * Alice <-- server    <-- ACKMessage(read)      --- Bob
+   * 
    * @param response 
    */
   private async handleMessage(response: Message) {
@@ -33,11 +34,9 @@ export class Messenger {
 
       let { receiverId, content } = response
       content = JSON.parse(content as string)
-      const { ackMsgId, type } = content as { ackMsgId: MsgId, type: number }
-      console.log(
-        'ACK Message received for msg: ', ackMsgId,
-        'to', receiverId,
-        'type', ACKMsgType[type])
+      const { ackMsgId, type } = content as any
+      console.log(`ACK(${ackMsgId}) to ${receiverId} type ${ACKMsgType[type]}`)
+
       if (this.pendingMessages.has(ackMsgId)) {
         const { resolve } = this.pendingMessages.get(ackMsgId)
         this.pendingMessages.delete(ackMsgId)
