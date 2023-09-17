@@ -4,7 +4,7 @@ import { backOff } from "src/utils/utils";
 import { SocketManager } from "./socket-mamager";
 import { EventEmitter } from "stream";
 import { snowflake } from "./snowflake";
-import { ACKMsgType, Message, MessageType, MsgId } from "../internal-message/entities/message-new.entity";
+import { ACKMsgType, Message, MessageType, MsgId, isValidACK } from "../internal-message/entities/message-new.entity";
 
 export class Messenger {
   private pendingMessages: Map<MsgId, { resolve: (msg: Message) => void; reject: (error: Error) => void }> = new Map()
@@ -27,46 +27,40 @@ export class Messenger {
    */
   private async handleMessage(response: Message) {
     try {
-      if (!response) {
-        throw new Error('Invalid message received') //TODO: add more validation
-      }
-      if (response.type !== MessageType.ACK) {
+      if (!isValidACK(response)) {
         return
       }
-      response.msgId = snowflake.nextId().toString()
-      response.senderId = this._socket.user?.id
-      response.sentAt = new Date()
-      let { msgId, senderId, receiverId, type: _type, content } = response
-      if (typeof content === 'string') {
-        content = JSON.parse(content)
-      }
-      const { ackMsgId, type } = content as unknown as { ackMsgId: MsgId, type: number }
+
+      let { receiverId, content } = response
+      content = JSON.parse(content as string)
+      const { ackMsgId, type } = content as { ackMsgId: MsgId, type: number }
       console.log(
-        'ACK Message received for msg: ', ackMsgId, 
-        'from ', senderId, //FIXME this is undefined, fix it
-        'to', receiverId, 
+        'ACK Message received for msg: ', ackMsgId,
+        'to', receiverId,
         'type', ACKMsgType[type])
       if (this.pendingMessages.has(ackMsgId)) {
         const { resolve } = this.pendingMessages.get(ackMsgId)
         this.pendingMessages.delete(ackMsgId)
         resolve(response)
       }
-
     } catch (error) {
       console.error('Error while handling message:', error)
     }
   }
 
   sendMessageWithTimeout(message: Message, timeout: number = 3000, requireAck = true): Promise<Message> {
+    // cast a message, without ack
     if (!requireAck) {
       this._socket.emit(messageToken, message)
       return Promise.resolve(null)
     }
+
+    // send with timeout, if timeout, reject
     return new Promise<Message>((resolve, reject) => {
       setTimeout(() => {
         this.pendingMessages.delete(message.msgId)
         reject(new MessageTimeoutException())
-      }, timeout)
+      }, timeout) // No need to clear timeout, it won't reject if it's already resolved
 
       this.pendingMessages.set(message.msgId, { resolve, reject })
       this._socket.emit(messageToken, message)

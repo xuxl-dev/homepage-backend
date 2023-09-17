@@ -66,10 +66,6 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() data: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    // TODO clean this
-    // Refactor all message handling by using pipeline
-    // do not process ack here
-
     const msg = Message.new(data, client.user.id)
     this.socketIoService.safeSendMessage(msg)
     return Message.ACK(msg, ACKMsgType.DELIVERED)
@@ -133,3 +129,5 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     return 'left'
   }
 }
+
+

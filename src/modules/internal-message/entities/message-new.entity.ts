@@ -112,3 +112,7 @@ export class Message {
     return msg
   }
 }
+
+export function isValidACK(msg: Message) {
+  return msg.type === MessageType.ACK && msg.content
+}
