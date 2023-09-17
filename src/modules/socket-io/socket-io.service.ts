@@ -23,6 +23,7 @@ export class SocketIoService {
   roomManager = new RoomManager()
   socketManager = SocketManager.instance().init(async (msg: Message) => { //TODO use strategy pattern
     try {
+      console.log(`Forwarding ack`, msg.msgId)
       await this.safeSendMessage(msg, false)
       // update read count
       if (typeof msg.content != 'string' && msg.content.type === ACKMsgType.READ) { //clean this
@@ -49,7 +50,8 @@ export class SocketIoService {
     const messenger = this.socketManager.getMessenger(message.receiverId)
 
     if (messenger) {
-      console.log(`Sending online message ${message.msgId}`)
+      console.log(`Sending online message`, message.msgId)
+      // print stack trace
       await messenger.sendMessageWithTimeout(message, 3000, requireAck);
     } else {
       throw new UserOfflineException();

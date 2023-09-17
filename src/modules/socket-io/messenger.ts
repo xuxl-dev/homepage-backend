@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { ACKToken, messageToken } from "./Tokens";
+import { messageToken } from "./Tokens";
 import { backOff } from "src/utils/utils";
 import { SocketManager } from "./socket-mamager";
 import { EventEmitter } from "stream";
@@ -14,7 +14,7 @@ export class Messenger {
 
   constructor(socket: Socket, onMsgFail: (msg: Message) => Promise<void>) {
     this._socket = socket
-    this._socket.on(ACKToken, this.handleMessage.bind(this))
+    this._socket.on(messageToken, this.handleMessage.bind(this))
     this.onAckMsgCallback = onMsgFail
   }
 
@@ -30,6 +30,9 @@ export class Messenger {
     try {
       if (!response) {
         throw new Error('Invalid message received') //TODO: add more validation
+      }
+      if (response.type !== MessageType.ACK) {
+        return
       }
       response.msgId = snowflake.nextId().toString()
       response.senderId = this._socket.user?.id

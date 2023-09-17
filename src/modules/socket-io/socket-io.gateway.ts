@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 import { messageToken } from './Tokens';
 import { UserOfflineException } from '../internal-message/internal-message.service';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
-import { ACKMsgType, Message } from '../internal-message/entities/message-new.entity';
+import { ACKMsgType, Message, MessageType } from '../internal-message/entities/message-new.entity';
 import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
@@ -60,8 +60,13 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() data: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
+    // TODO clean this
+    // Refactor all message handling by using pipeline
+    // do not process ack here
+    if (data.type === MessageType.ACK) {
+      return
+    }
     const msg = Message.new(data, client.user.id)
-    // console.log(msg)
     this.socketIoService.safeSendMessage(msg)
     return Message.ServerACK(msg, ACKMsgType.DELIVERED)
   }
