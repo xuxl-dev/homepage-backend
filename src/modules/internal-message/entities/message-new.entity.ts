@@ -1,6 +1,6 @@
 import { Snowflake } from 'src/modules/socket-io/utils';
 import { CreateMessageDto } from '../dto/create-message.dto';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm';
 const snowflake = new Snowflake(3, 1)
 
 export enum MessageType {
@@ -85,10 +85,10 @@ export class Message {
   static ACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
     msg.type = MessageType.ACK
-    msg.content = JSON.stringify({
+    msg.content = {
       ackMsgId: toMessage.msgId.toString(),
       type,
-    })
+    }
     msg.receiverId = toMessage.senderId
     msg.senderId = toMessage.receiverId
     return msg
@@ -111,8 +111,30 @@ export class Message {
     msg.senderId = object.senderId
     return msg
   }
+
+  @BeforeInsert()
+  beforeInsert() {
+    //serialize content
+    if (typeof this.content !== 'string') {
+      this.content = JSON.stringify(this.content)
+    }
+  }
 }
 
 export function isValidACK(msg: Message) {
   return msg.type === MessageType.ACK && msg.content
+}
+
+export function parseACK(msg: Message) {
+  if (typeof msg.content === 'string') {
+    return JSON.parse(msg.content as string) as {
+      ackMsgId: MsgId,
+      type: ACKMsgType,
+    }
+  } else {
+    return msg.content as {
+      ackMsgId: MsgId,
+      type: ACKMsgType,
+    }
+  }
 }
