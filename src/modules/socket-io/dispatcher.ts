@@ -35,7 +35,7 @@ class EndProcessorLayer extends ProcessorBase {
  * this layer times all messages, if ack is not received in time, fall back to offline message
  */
 class ACKCountingLayer extends ProcessorBase {
-  timeout = 2000
+  timeout = 15 * 1000
   private pendingMessages: Map<MsgId, () => void> = new Map()
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     if (isValidACK(msg)) {
