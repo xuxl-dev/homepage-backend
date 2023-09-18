@@ -6,6 +6,7 @@ import { ChatgroupModule } from '../chatgroup/chatgroup.module';
 import { OfflineMessageModule } from '../offline-message/offline-message.module';
 import { BullModule } from '@nestjs/bull';
 import { Dispatcher } from './dispatcher';
+import { MessageQueue } from './message.consumer';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { Dispatcher } from './dispatcher';
     BullModule.registerQueue({
       name: 'message',
     })],
-  providers: [SocketIoGateway, SocketIoService, Dispatcher],
+  providers: [SocketIoGateway, SocketIoService, Dispatcher, MessageQueue],
   exports: [SocketIoService]
 })
 export class SocketIoModule { }

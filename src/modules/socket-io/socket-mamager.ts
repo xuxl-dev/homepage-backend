@@ -1,7 +1,6 @@
 import { Socket } from "socket.io";
 import { Messenger } from "./messenger";
 import { UserOfflineException } from "../internal-message/internal-message.service";
-import { Message } from "../internal-message/entities/message-new.entity";
 
 /**
  * SocketManager
@@ -27,7 +26,6 @@ export class SocketManager {
   /**
    * Map from socket id to user id
    */
-
   private messengerToUserMap: Map<Messenger, number> = new Map()
 
   set(user: number, socket: Socket) {

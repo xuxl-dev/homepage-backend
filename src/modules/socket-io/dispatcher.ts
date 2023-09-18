@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { ACKMsgType, Message, MsgId, isValidACK, parseACK } from '../internal-message/entities/message-new.entity';
 import { OfflineMessageService } from "../offline-message/offline-message.service";
-import { SocketIoService } from './socket-io.service';
+import { UserOfflineException } from "../internal-message/internal-message.service";
+import { SocketManager } from "./socket-mamager";
 
 interface ProcessorLayer {
   next: (msg: Message) => Promise<Message>; // next layer
@@ -48,7 +49,7 @@ class ACKCountingLayer extends ProcessorBase {
       return this.next(msg);
     } else {
       const messageFail = setTimeout(() => {
-        console.log(`message ${msg.msgId} failed to deliver`)
+        console.log(`online message ${msg.msgId} failed, fall back to offline message`)
         this.pendingMessages.delete(msg.msgId)
         this.ctx.offlineMessageService.sendMessageOrFail(msg).catch(e => {
           console.error(e)
@@ -68,7 +69,7 @@ class ACKCountingLayer extends ProcessorBase {
 class ForwardingLayer extends ProcessorBase  {
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     // try send online message, don't care about the result, fail is processed in ack counting layer
-    this.ctx.socketIoService.castMessage(msg).catch(e => {
+    this.ctx.dispatcher.castMessage(msg).catch(e => {
       console.error(e)
     })
     return this.next(msg);
@@ -77,7 +78,6 @@ class ForwardingLayer extends ProcessorBase  {
 
 type DispatcherCtx = {
   offlineMessageService: OfflineMessageService,
-  socketIoService: SocketIoService,
   dispatcher: Dispatcher
 }
 
@@ -89,14 +89,13 @@ type DispatcherCtx = {
 @Injectable()
 export class Dispatcher {
   ctx: DispatcherCtx
+  socketManager = SocketManager.instance()
 
   constructor(
     private readonly offlineMessageService: OfflineMessageService,
-    private readonly socketIoService: SocketIoService,
   ) {
     this.ctx = {
       offlineMessageService,
-      socketIoService,
       dispatcher:this
     }
     this.addProcessors([
@@ -117,7 +116,6 @@ export class Dispatcher {
   }
 
   /**
-   * non-blocking
    * @param msg 
    */
   public dispatch(msg: Message) {
@@ -128,6 +126,18 @@ export class Dispatcher {
   private setNexts() {
     for (let i = 0; i < this.processors.length - 1; i++) {
       this.processors[i].next = this.processors[i + 1].process;
+    }
+  }
+
+  
+  
+  async castMessage(message: Message) {
+    const messenger = this.socketManager.getMessenger(message.receiverId)
+
+    if (messenger) {
+      messenger.castMessage(message)
+    } else {
+      throw new UserOfflineException()
     }
   }
 }

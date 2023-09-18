@@ -3,13 +3,14 @@ import { WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { ChatgroupService } from '../chatgroup/chatgroup.service';
-import { OfflineMessageService } from '../offline-message/offline-message.service';  
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
 import { UserOfflineException } from '../internal-message/internal-message.service';
-import { UnknownError } from './utils';
-import { MessageTimeoutException } from './messenger';
-import { ACKMsgType, Message, MessageType } from '../internal-message/entities/message-new.entity';
+import { Message } from '../internal-message/entities/message-new.entity';
+import { OfflineMessageService } from '../offline-message/offline-message.service';
+import { Dispatcher } from './dispatcher';
+import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
+import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -18,41 +19,37 @@ export class SocketIoService {
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
     private readonly offlineMessageService: OfflineMessageService,
+    private readonly dispatcher: Dispatcher,
   ) { }
-  
+
   roomManager = new RoomManager()
-  socketManager = SocketManager.instance()
 
   @WebSocketServer()
   io: Server;
 
-  /**
-   * send message to one user, this is safe to send to offline user
-   * if it is offline, an error will be thrown
-   * @param message 
-   * @throws UserOfflineException
-   * @throws MessageTimeoutException
-   * @throws UnknownError
-   */
-  async sendMessageOrFail(message: Message, requireAck = true) {
-    const messenger = this.socketManager.getMessenger(message.receiverId)
-
-    if (messenger) {
-      console.log(`Sending online message`, message.msgId)
-      // print stack trace
-      await messenger.sendMessageWithTimeout(message, 3000, requireAck);
-    } else {
-      throw new UserOfflineException();
+  async retriveAndSync(data: RetriveMessageDto, clientId: number) {
+    const offlineMessages = await this.offlineMessageService.retrive(
+      clientId,
+      data.afterDate,
+      {
+        page: data.page,
+        pageSize: data.pageSize
+      }
+    )
+    for (const msg of offlineMessages) {
+      this.dispatcher.dispatch(msg)
+    }
+    return {
+      messageCount: offlineMessages.length
     }
   }
 
-  async castMessage(message: Message) {
-    const messenger = this.socketManager.getMessenger(message.receiverId)
-
-    if (messenger) {
-      messenger.castMessage(message)
+  async syncMessage(data: QueryMessageDto) {
+    const msg = await this.offlineMessageService.findOne(data.id)
+    if (msg) {
+      return msg
     } else {
-      throw new UserOfflineException()
+      throw new Error('Message not found')
     }
   }
 
@@ -80,6 +77,8 @@ export class SocketIoService {
     return await this.authService.getUserByToken(this.getJwtTokenFromSocket(socket));
   }
 
+  socketManager = SocketManager.instance()
+
   addSocket(id: number, socket: Socket) {
     // if already exist, disconnect the old one
     const oldSocket = this.socketManager.getSocket(id)
@@ -92,23 +91,4 @@ export class SocketIoService {
   removeSocket(id: number) {
     this.socketManager.delete(id);
   }
-
-  async safeSendMessage(msg: Message, requireAck = true){
-    try {
-      if(msg.type === MessageType.ACK) {
-        requireAck = false
-      }
-      await this.sendMessageOrFail(msg, requireAck)
-    } catch (e) {
-      if (e instanceof UserOfflineException || e instanceof MessageTimeoutException) {
-        console.log(`Sending online message ${msg.msgId} failed, convert to offline message`)
-        await this.offlineMessageService.sendMessageOrFail(msg)
-        console.log(`Sending offline message ${msg.msgId} success`)
-      } else {
-        console.error(`Sending online message ${msg.msgId} failed: `, e)
-        throw e
-      }
-    }
-  }
-
 }

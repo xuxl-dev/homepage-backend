@@ -3,17 +3,26 @@ import { OnQueueFailed, Process } from '@nestjs/bull';
 import { Processor } from '@nestjs/bull';
 import { SocketIoService } from './socket-io.service';
 import { Message } from '../internal-message/entities/message-new.entity';
+import { Dispatcher } from './dispatcher';
 
 @Processor('message')
 export class MessageQueue {
   constructor(
-    private readonly socketIoService: SocketIoService,
-  ) { }
+    private readonly dispatcher: Dispatcher,
+  ) { 
+    console.debug('MessageQueue created')
+  }
 
+  /**
+   * Non-blocking send message
+   * @param job 
+   * @returns 
+   */
   @Process('send')
-  async send(job: Job<Message>) {
+  send(job: Job<Message>) {
+    console.debug('Message dispatched', job.data)
     try {
-      await this.socketIoService.safeSendMessage(job.data)
+      this.dispatcher.dispatch(job.data)
       return Promise.resolve()
     } catch (error) {
       console.error('Error while sending message:', error)
