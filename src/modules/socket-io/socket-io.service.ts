@@ -42,12 +42,12 @@ export class SocketIoService {
     }
   }
 
-  async syncMessage(data: QueryMessageDto) {
+  async syncMessage(data: QueryMessageDto, clientId: number) {
     const msg = await this.offlineMessageService.findOne(data.id)
-    if (msg) {
+    if (msg && msg.receiverId === clientId) {
       return msg
     } else {
-      throw new Error('Message not found')
+      throw new Error('Message not found or not belong to you')
     }
   }
 

@@ -1,6 +1,6 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { SocketIoService } from './socket-io.service';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { messageToken } from './Tokens';
 import { ACKMsgType, Message } from '../internal-message/entities/message-new.entity';
@@ -15,18 +15,14 @@ const logger = new Logger('SocketIoGateway')
 @WebSocketGateway(3001, {
   cors: true,
 })
-export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
-  @WebSocketServer()
-  server: Server
-
+export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly socketIoService: SocketIoService,
     @InjectQueue('message') private readonly messageQueue: Queue,
   ) { }
 
-  afterInit(server) { }
   handleDisconnect(client) {
-    logger.debug(`user disconnected: `,client.user.id)
+    logger.debug(`user disconnected: `, client.user.id)
     this.socketIoService.removeSocket(client.user.id)
   }
 
@@ -57,15 +53,16 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
   ) {
     const msg = Message.new(data, client.user.id)
-    const job = await this.messageQueue.add('send', msg)
+    await this.messageQueue.add('send', msg)
     return Message.ACK(msg, ACKMsgType.DELIVERED)
   }
 
   @SubscribeMessage('syncMessage')
   async syncMessage(
     @MessageBody() data: QueryMessageDto,
+    @ConnectedSocket() client: Socket,
   ) {
-    return await this.socketIoService.syncMessage(data)
+    return await this.socketIoService.syncMessage(data, client.user.id)
   }
 
   @SubscribeMessage('retrive')
