@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ACKMsgType, Message, MsgId, isValidACK, parseACK } from '../internal-message/entities/message-new.entity';
+import { ACKMsgType, Message, MessageFlag, MsgId, isValidACK, parseACK } from '../internal-message/entities/message-new.entity';
 import { OfflineMessageService } from "../offline-message/offline-message.service";
 import { UserOfflineException } from "../internal-message/internal-message.service";
 import { SocketManager } from "./socket-mamager";
@@ -27,7 +27,7 @@ class BeginProcessorLayer extends ProcessorBase {
 
 class EndProcessorLayer extends ProcessorBase {
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
-    return null // do nothing
+    return msg // do nothing
   }
 }
 
@@ -35,19 +35,21 @@ class EndProcessorLayer extends ProcessorBase {
  * this layer times all messages, if ack is not received in time, fall back to offline message
  */
 class ACKCountingLayer extends ProcessorBase {
-  timeout = 1000
-  private pendingMessages: Map<MsgId, (msg: Message) => void> = new Map()
+  timeout = 2000
+  private pendingMessages: Map<MsgId, () => void> = new Map()
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     if (isValidACK(msg)) {
       const {ackMsgId, type} = parseACK(msg)
-      console.log(`ACK(${ackMsgId}, ${ACKMsgType[type]}))`)
+      // console.log(`ACK(${ackMsgId}, ${ACKMsgType[type]}))`)
       if (this.pendingMessages.has(ackMsgId)) { // at least one ack means the message is delivered successfully
-        const resolve = this.pendingMessages.get(ackMsgId)
+        this.pendingMessages.get(ackMsgId)()
         this.pendingMessages.delete(ackMsgId)
-        resolve(msg)
       }
-      return this.next(msg);
     } else {
+      if (msg.flag & MessageFlag.DO_NOT_STORE) { // just let message fail, don't store it
+        return this.next(msg)
+      }
+
       const messageFail = setTimeout(() => {
         console.log(`online message ${msg.msgId} failed, fall back to offline message`)
         this.pendingMessages.delete(msg.msgId)
@@ -56,11 +58,10 @@ class ACKCountingLayer extends ProcessorBase {
         })
       }, this.timeout)
 
-      this.pendingMessages.set(msg.msgId, (message) => {
+      this.pendingMessages.set(msg.msgId, () => {
         clearTimeout(messageFail)
         this.pendingMessages.delete(msg.msgId)
       })
-
     }
     return this.next(msg);
   }
@@ -72,6 +73,7 @@ class ForwardingLayer extends ProcessorBase  {
     this.ctx.dispatcher.castMessage(msg).catch(e => {
       if (e instanceof UserOfflineException) {
         // this is not an error, just a normal case
+        // ignore this, if this message needs to be stored, it will be stored in ack counting layer
       } else {
         console.error(e)
       }
