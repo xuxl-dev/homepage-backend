@@ -34,7 +34,7 @@ export class Message {
   @Column()
   receiverId: number
 
-  // Need to swithc to MongoDB to support rich text
+  // Need to switch to MongoDB to support rich text
   @Column('text', {
     transformer: {
       to: (value: string | object) => {
