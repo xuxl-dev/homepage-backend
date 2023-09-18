@@ -13,7 +13,7 @@ export class Messenger {
 
   constructor(socket: Socket) {
     this._socket = socket
-    this._socket.on(messageToken, this.handleMessage.bind(this))
+    // this._socket.on(messageToken, this.handleMessage.bind(this))
     // this.onAckMsgCallback = onMsgFail
   }
 
@@ -68,6 +68,14 @@ export class Messenger {
 
   sendMessageBackoffWithTimeout(message: Message, timeout: number = 1000, maxRetries = 3, retryInterval = 100): Promise<Message> {
     return backOff(() => this.sendMessageWithTimeout(message, timeout), retryInterval, maxRetries)
+  }
+
+  /**
+   * this is a fire and forget method, no ack is required
+   * @param message 
+   */
+  castMessage(message: Message) {
+    this._socket.emit(messageToken, message)
   }
 }
 

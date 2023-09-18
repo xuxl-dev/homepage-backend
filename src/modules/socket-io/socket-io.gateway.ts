@@ -10,6 +10,7 @@ import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { Dispatcher } from './dispatcher';
 
 
 const logger = new Logger('SocketIoGateway')
@@ -25,6 +26,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     private readonly socketIoService: SocketIoService,
     private readonly offlineMessageService: OfflineMessageService,
     @InjectQueue('message') private readonly messageQueue: Queue,
+    private readonly dispatcher: Dispatcher,
   ) { }
 
   afterInit(server) { }
@@ -57,7 +59,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     };
   }
   /**
-   * for all message, forward if possible, fall back to offline message
+   * for all message, forward if possible, track acks, if fail, fall back to offline message
    * but ack needs no ack to it
    * @param data 
    * @param client 
@@ -69,8 +71,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
   ) {
     const msg = Message.new(data, client.user.id)
-    this.socketIoService.safeSendMessage(msg)
-    return Message.ACK(msg, ACKMsgType.DELIVERED)
+    return await this.dispatcher.dispatch(msg)
   }
 
   @SubscribeMessage('syncMessage')

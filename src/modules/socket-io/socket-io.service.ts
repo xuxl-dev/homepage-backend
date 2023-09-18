@@ -46,6 +46,16 @@ export class SocketIoService {
     }
   }
 
+  async castMessage(message: Message) {
+    const messenger = this.socketManager.getMessenger(message.receiverId)
+
+    if (messenger) {
+      messenger.castMessage(message)
+    } else {
+      throw new UserOfflineException()
+    }
+  }
+
   createRoom(createSocketIoDto: CreateRoomDto) {
     this.chatGroupService.create(createSocketIoDto);
   }
