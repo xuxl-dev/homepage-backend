@@ -10,8 +10,6 @@ import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
-
-
 const logger = new Logger('SocketIoGateway')
 
 @WebSocketGateway(3001, {
@@ -28,7 +26,7 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   afterInit(server) { }
   handleDisconnect(client) {
-    logger.debug(`user disconnected: ${client.user.id}`)
+    logger.debug(`user disconnected: `,client.user.id)
     this.socketIoService.removeSocket(client.user.id)
   }
 

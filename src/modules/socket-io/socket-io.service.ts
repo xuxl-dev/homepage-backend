@@ -5,8 +5,6 @@ import { AuthService } from '../auth/auth.service';
 import { ChatgroupService } from '../chatgroup/chatgroup.service';
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
-import { UserOfflineException } from '../internal-message/internal-message.service';
-import { Message } from '../internal-message/entities/message-new.entity';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
 import { Dispatcher } from './dispatcher';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';

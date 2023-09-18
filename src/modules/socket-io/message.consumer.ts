@@ -1,7 +1,6 @@
 import { Job } from 'bull';
 import { OnQueueFailed, Process } from '@nestjs/bull';
 import { Processor } from '@nestjs/bull';
-import { SocketIoService } from './socket-io.service';
 import { Message } from '../internal-message/entities/message-new.entity';
 import { Dispatcher } from './dispatcher';
 

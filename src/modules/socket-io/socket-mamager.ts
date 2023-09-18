@@ -1,6 +1,5 @@
 import { Socket } from "socket.io";
 import { Messenger } from "./messenger";
-import { UserOfflineException } from "../internal-message/internal-message.service";
 
 /**
  * SocketManager
@@ -51,8 +50,6 @@ export class SocketManager {
   }
 
   getMessenger(user: number) {
-    const ret = this.userToMessengerMap.get(user)
-    if (ret) return ret
-    else throw new UserOfflineException()
+    return this.userToMessengerMap.get(user)
   }
 }

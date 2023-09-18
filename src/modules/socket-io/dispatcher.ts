@@ -27,7 +27,7 @@ class BeginProcessorLayer extends ProcessorBase {
 
 class EndProcessorLayer extends ProcessorBase {
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
-    return Message.ACK(msg, ACKMsgType.RECEIVED)
+    return null // do nothing
   }
 }
 
@@ -70,7 +70,11 @@ class ForwardingLayer extends ProcessorBase  {
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     // try send online message, don't care about the result, fail is processed in ack counting layer
     this.ctx.dispatcher.castMessage(msg).catch(e => {
-      console.error(e)
+      if (e instanceof UserOfflineException) {
+        // this is not an error, just a normal case
+      } else {
+        console.error(e)
+      }
     })
     return this.next(msg);
   }
@@ -129,8 +133,6 @@ export class Dispatcher {
     }
   }
 
-  
-  
   async castMessage(message: Message) {
     const messenger = this.socketManager.getMessenger(message.receiverId)
 
