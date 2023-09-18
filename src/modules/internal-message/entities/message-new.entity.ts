@@ -3,19 +3,6 @@ import { CreateMessageDto } from '../dto/create-message.dto';
 import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm';
 const snowflake = new Snowflake(3, 1)
 
-export enum MessageType {
-  'plain-text',
-  'json',
-  'rich-text',
-  'packed',
-  'broadcast',
-  'ACK',
-  'unknown',
-  'e2ee',
-  'key-exchange',
-  'withdraw',
-}
-
 export enum MessageFlag {
   'NONE' = 0,   
   'DO_NOT_STORE' = 1 << 0, // do not store this message in database, may fail to deliver
@@ -71,9 +58,6 @@ export class Message {
   @Column()
   sentAt: Date = new Date()
 
-  @Column('int')
-  type: MessageType
-
   @Column({default: 0})
   hasReadCount: number = 0
 
@@ -84,7 +68,7 @@ export class Message {
 
   static ACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
-    msg.type = MessageType.ACK
+    msg.flag = MessageFlag.IS_ACK
     msg.content = {
       ackMsgId: toMessage.msgId.toString(),
       type,
@@ -98,7 +82,7 @@ export class Message {
     const msg = new Message()
     msg.receiverId = createMessageDto.receiverId
     msg.content = createMessageDto.content
-    msg.type = createMessageDto.type
+    msg.flag = createMessageDto.flag
     msg.senderId = senderId
     return msg
   }
@@ -107,7 +91,7 @@ export class Message {
     const msg = new Message()
     msg.receiverId = object.receiverId
     msg.content = object.content
-    msg.type = object.type
+    msg.flag = object.flag
     msg.senderId = object.senderId
     return msg
   }
@@ -122,7 +106,7 @@ export class Message {
 }
 
 export function isValidACK(msg: Message) {
-  return msg.type === MessageType.ACK && msg.content
+  return msg.flag & MessageFlag.IS_ACK
 }
 
 export function parseACK(msg: Message) {
