@@ -6,12 +6,13 @@ const snowflake = new Snowflake(3, 1)
 export enum MessageFlag {
   'NONE' = 0,   
   'DO_NOT_STORE' = 1 << 0, // do not store this message in database, may fail to deliver
-  'IS_ACK' = 1 << 1, // this message is an ACK message
-  'IS_BROADCAST' = 1 << 2, // this message is a broadcast message
-  'IS_E2EE' = 1 << 3, // this message is encrypted
-  'IS_KEY_EXCHANGE' = 1 << 4, // this message is a key exchange message
-  'IS_WITHDRAW' = 1 << 5, // this message is a withdraw message
-  'IS_COMPLEX' = 1 << 6, // this message is a complex message, the content is a json string
+  'ACK' = 1 << 1, // this message is an ACK message
+  'BROADCAST' = 1 << 2, // this message is a broadcast message
+  'E2EE' = 1 << 3, // this message is encrypted
+  'KEY_EXCHANGE' = 1 << 4, // this message is a key exchange message
+  'WITHDRAW' = 1 << 5, // this message is a withdraw message
+  'COMPLEX' = 1 << 6, // this message is a complex message, the content is a nested message
+  'PRESAVED_RSA' = 1 << 7 //use presaved RSA key to encrypt (the target user must have a presaved RSA key)
   //...
 }
 
@@ -68,7 +69,7 @@ export class Message {
 
   static ACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
-    msg.flag = MessageFlag.IS_ACK
+    msg.flag = MessageFlag.ACK
     msg.content = {
       ackMsgId: toMessage.msgId.toString(),
       type,
@@ -106,7 +107,7 @@ export class Message {
 }
 
 export function isValidACK(msg: Message) {
-  return msg.flag & MessageFlag.IS_ACK
+  return msg.flag & MessageFlag.ACK
 }
 
 export function parseACK(msg: Message) {
