@@ -45,9 +45,6 @@ export class OfflineMessageService {
           receiverId: userId,
           sentAt: MoreThanOrEqual(afterDate)
         },
-        order: {
-          sentAt: 'DESC'
-        },
         take: pagination?.pageSize,
         skip: pagination?.page * pagination?.pageSize
       }
