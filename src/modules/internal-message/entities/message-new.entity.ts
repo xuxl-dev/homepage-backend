@@ -3,28 +3,16 @@ import { CreateMessageDto } from '../dto/create-message.dto';
 import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm';
 const snowflake = new Snowflake(3, 1)
 
-export enum MessageType {
-  'plain-text',
-  'json',
-  'rich-text',
-  'packed',
-  'broadcast',
-  'ACK',
-  'unknown',
-  'e2ee',
-  'key-exchange',
-  'withdraw',
-}
-
 export enum MessageFlag {
   'NONE' = 0,   
   'DO_NOT_STORE' = 1 << 0, // do not store this message in database, may fail to deliver
-  'IS_ACK' = 1 << 1, // this message is an ACK message
-  'IS_BROADCAST' = 1 << 2, // this message is a broadcast message
-  'IS_E2EE' = 1 << 3, // this message is encrypted
-  'IS_KEY_EXCHANGE' = 1 << 4, // this message is a key exchange message
-  'IS_WITHDRAW' = 1 << 5, // this message is a withdraw message
-  'IS_COMPLEX' = 1 << 6, // this message is a complex message, the content is a json string
+  'ACK' = 1 << 1, // this message is an ACK message
+  'BROADCAST' = 1 << 2, // this message is a broadcast message
+  'E2EE' = 1 << 3, // this message is encrypted
+  'KEY_EXCHANGE' = 1 << 4, // this message is a key exchange message
+  'WITHDRAW' = 1 << 5, // this message is a withdraw message
+  'COMPLEX' = 1 << 6, // this message is a complex message, the content is a nested message
+  'PRESAVED_RSA' = 1 << 7 //use presaved RSA key to encrypt (the target user must have a presaved RSA key)
   //...
 }
 
@@ -47,7 +35,7 @@ export class Message {
   @Column()
   receiverId: number
 
-  // Need to swithc to MongoDB to support rich text
+  // Need to switch to MongoDB to support rich text
   @Column('text', {
     transformer: {
       to: (value: string | object) => {
@@ -71,9 +59,6 @@ export class Message {
   @Column()
   sentAt: Date = new Date()
 
-  @Column('int')
-  type: MessageType
-
   @Column({default: 0})
   hasReadCount: number = 0
 
@@ -84,7 +69,7 @@ export class Message {
 
   static ACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
-    msg.type = MessageType.ACK
+    msg.flag = MessageFlag.ACK
     msg.content = {
       ackMsgId: toMessage.msgId.toString(),
       type,
@@ -98,7 +83,7 @@ export class Message {
     const msg = new Message()
     msg.receiverId = createMessageDto.receiverId
     msg.content = createMessageDto.content
-    msg.type = createMessageDto.type
+    msg.flag = createMessageDto.flag
     msg.senderId = senderId
     return msg
   }
@@ -107,7 +92,7 @@ export class Message {
     const msg = new Message()
     msg.receiverId = object.receiverId
     msg.content = object.content
-    msg.type = object.type
+    msg.flag = object.flag
     msg.senderId = object.senderId
     return msg
   }
@@ -122,7 +107,7 @@ export class Message {
 }
 
 export function isValidACK(msg: Message) {
-  return msg.type === MessageType.ACK && msg.content
+  return msg.flag & MessageFlag.ACK
 }
 
 export function parseACK(msg: Message) {

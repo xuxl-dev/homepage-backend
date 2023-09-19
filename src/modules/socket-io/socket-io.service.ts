@@ -6,9 +6,10 @@ import { ChatgroupService } from '../chatgroup/chatgroup.service';
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
 import { OfflineMessageService } from '../offline-message/offline-message.service';
-import { Dispatcher } from './dispatcher';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -17,7 +18,8 @@ export class SocketIoService {
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
     private readonly offlineMessageService: OfflineMessageService,
-    private readonly dispatcher: Dispatcher,
+    @InjectQueue('message')
+    private readonly messageQueue: Queue
   ) { }
 
   roomManager = new RoomManager()
@@ -35,19 +37,19 @@ export class SocketIoService {
       }
     )
     for (const msg of offlineMessages) {
-      this.dispatcher.dispatch(msg)
+      this.messageQueue.add('send', msg) // no wait
     }
     return {
       messageCount: offlineMessages.length
     }
   }
 
-  async syncMessage(data: QueryMessageDto) {
+  async syncMessage(data: QueryMessageDto, clientId: number) {
     const msg = await this.offlineMessageService.findOne(data.id)
-    if (msg) {
+    if (msg && msg.receiverId === clientId) {
       return msg
     } else {
-      throw new Error('Message not found')
+      throw new Error('Message not found or not belong to you')
     }
   }
 
