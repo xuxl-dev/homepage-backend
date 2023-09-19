@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { Message2 } from '../internal-message/schemas/message.schema';
 
 
+
 /**
  * feature:
  * 通过回执计数来避免恶意的客户端修改回执逻辑，
@@ -24,7 +25,7 @@ export class OfflineMessageService {
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     @InjectModel(Message2.name)
-    private readonly messageModel: Model<Message>
+    private readonly messageModel: Model<Message2>
   ) { }
 
   /** 
@@ -36,6 +37,10 @@ export class OfflineMessageService {
    * */
   async sendMessageOrFail(message: Message) {
     return await this.messageRepository.save(message)
+  }
+
+  async sendMessageOrFail2(message: Message2) {
+    return await this.messageModel.create(message)
   }
   /**
    * retrieve offline messages for a user including chat and chat group
@@ -56,6 +61,20 @@ export class OfflineMessageService {
     )
   }
 
+  async retrive2(userId: number, afterDate?: Date, pagination?: { page: number, pageSize: number }) {
+    return await this.messageModel.find(
+      {
+        receiverId: userId,
+        sentAt: MoreThanOrEqual(afterDate)
+      },
+      null,
+      {
+        limit: pagination?.pageSize,
+        skip: pagination?.page * pagination?.pageSize
+      }
+    )
+  }
+
   async deleteBefore(date: Date) {
     // 查询并删除过期消息
     const expiredMessages = await this.messageRepository.createQueryBuilder()
@@ -66,9 +85,27 @@ export class OfflineMessageService {
     return expiredMessages
   }
 
+  async deleteBefore2(date: Date) : Promise<number> {
+    const expiredMessages = await this.messageModel.deleteMany({ createdAt: { $lte: date } })
+    return expiredMessages.deletedCount
+  }
+
   async findOne(id: string) {
     try {
       return await this.messageRepository.findOneOrFail({ where: { msgId: id } })
+    } catch (error) {
+      return null
+    }
+  }
+
+  /**
+   * 
+   * @param id auto generated mongoose _id
+   * @returns 
+   */
+  async findOne2(id: string) {
+    try {
+      return await this.messageModel.findById(id)
     } catch (error) {
       return null
     }
@@ -84,6 +121,14 @@ export class OfflineMessageService {
     if (msg) {
       msg.hasReadCount += 1
       await this.messageRepository.save(msg)
+    }
+  }
+
+  async updateReadCount2(id: string, receiverId: number) {
+    const msg = await this.findOne2(id)
+    if (msg) {
+      msg.hasReadCount += 1
+      await msg.save()
     }
   }
 }

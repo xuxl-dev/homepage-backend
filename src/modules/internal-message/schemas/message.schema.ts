@@ -1,15 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { MessageFlag, MsgId } from '../entities/message-new.entity';
-import { snowflake } from 'src/modules/socket-io/snowflake';
 
 export type MessageDocument = HydratedDocument<Message2>;
 
 @Schema()
 export class Message2 {
-  @Prop({ required: true })
-  msgId: MsgId = snowflake.nextId().toString()
-
   @Prop()
   senderId: number
 
