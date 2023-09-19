@@ -20,8 +20,8 @@ import { Message2 } from '../internal-message/schemas/message.schema';
 export class OfflineMessageService {
 
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    // @InjectRepository(User)
+    // private readonly userRepository: Repository<User>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     @InjectModel(Message2.name)
