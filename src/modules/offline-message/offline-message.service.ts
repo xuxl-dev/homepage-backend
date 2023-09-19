@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Message } from '../internal-message/entities/message-new.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Message2 } from '../internal-message/schemas/message.schema';
 
 
 /**
@@ -19,7 +22,9 @@ export class OfflineMessageService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Message)
-    private readonly messageRepository: Repository<Message>
+    private readonly messageRepository: Repository<Message>,
+    @InjectModel(Message2.name)
+    private readonly messageModel: Model<Message>
   ) { }
 
   /** 
