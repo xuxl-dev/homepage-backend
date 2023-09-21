@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { CreateChatgroupDto } from './dto/create-chatgroup.dto';
 import { UpdateChatgroupDto } from './dto/update-chatgroup.dto';
 import { Repository } from 'typeorm';
-import { Chatgroup } from './entities/chatgroup.entity';
+import { ChatGroup } from './entities/chatgroup.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ChatgroupService {
 
   constructor(
-    @InjectRepository(Chatgroup)
-    private readonly chatgroupRepository: Repository<Chatgroup>,
+    @InjectRepository(ChatGroup)
+    private readonly chatgroupRepository: Repository<ChatGroup>,
   ) { }
 
   create(createChatgroupDto: CreateChatgroupDto) {

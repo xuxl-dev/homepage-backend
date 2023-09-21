@@ -33,7 +33,7 @@ export class UserController {
   @Roles(ROLES.USER)
   @Post('current')
   //get current user
-  async current( @Req() req ) {
+  async current(@Req() req) {
     return req.user;
   }
 
@@ -72,7 +72,7 @@ export class UserController {
     return this.userService.remove(+id);
   }
 
- 
+
 
 
 }

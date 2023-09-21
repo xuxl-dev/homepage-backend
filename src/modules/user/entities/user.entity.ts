@@ -1,10 +1,8 @@
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
-import { Geographic } from "./geographic.entity";
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcryptjs';
-import { Exclude, Expose, Transform } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
-// import { Comment } from "../../comment/entities/comment.entity";
-import { Chatgroup } from "src/modules/chatgroup/entities/chatgroup.entity";
+import { ChatGroup } from "src/modules/chatgroup/entities/chatgroup.entity";
 
 @Entity('user')
 export class User {
@@ -57,8 +55,6 @@ export class User {
   @JoinColumn()
   attributes: Promise<Attr>;
 
-  @Column({ type: 'json', nullable: true })
-  geographic: Geographic;
   @Column({ nullable: true })
   address: string;
   @Column({ nullable: true })
@@ -72,14 +68,17 @@ export class User {
   @DeleteDateColumn()
   deleted_at: Date;
 
-  @Column({ nullable: true })
-  token: string;
+  @ManyToMany(() => ChatGroup, chatgroup => chatgroup.members)
+  joinedChatGroups: ChatGroup[];
 
-  // @OneToMany(() => Comment, comment => comment.createdBy)
-  // comments: Comment[];
+  /**
+   * this is the public key of the user, used for e2e encryption
+   * if a user want to send a e2e message to an offline user,
+   * he should encrypt the message with this public key
+   */
+  @Column('text', { nullable: true })
+  public_key: string;
 
-  @ManyToMany(() => Chatgroup, chatgroup => chatgroup.members)
-  joinedChatGroups: Chatgroup[];
 
   @BeforeInsert()
   async encryptPwd() {
