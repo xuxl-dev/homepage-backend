@@ -21,7 +21,7 @@ export class TasksService {
 
       const expiredMessages = await this.offlineMessageService.deleteBefore(thirtyDaysAgo);
 
-      console.log(`${expiredMessages.affected} messages deleted.`);
+      console.log(`${expiredMessages} messages deleted.`);
     } catch (error) {
       console.error('Error deleting expired messages:', error);
     }

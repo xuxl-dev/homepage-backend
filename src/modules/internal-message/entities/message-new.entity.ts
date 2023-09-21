@@ -107,7 +107,7 @@ export class Message {
 }
 
 export function isValidACK(msg: Message) {
-  return msg.flag & MessageFlag.ACK
+  return !!(msg.flag & MessageFlag.ACK)
 }
 
 export function parseACK(msg: Message) {
