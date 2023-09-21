@@ -6,6 +6,11 @@ export default function configGenerator() {
   const envFilePath =
     mode === 'dev'
       ? ['local.development.env', 'development.env', '.env']
-      : ['local.production.env',  'production.env',  '.env'];
-  return ConfigModule.forRoot({ envFilePath });
+      : ['local.production.env',  'production.env',  '.env']
+  const ret =  ConfigModule.forRoot({ 
+    envFilePath,
+    isGlobal: true,
+  })
+  console.log(`config generated`);
+  return ret
 }

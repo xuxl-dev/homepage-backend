@@ -1,4 +1,4 @@
-import { Injectable, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,8 +12,8 @@ import { AttrsModule } from './attrs/attrs.module';
 import { CacheService } from '../db/redis/cache.service';
 
 const jwtModule = JwtModule.registerAsync({
-  inject: [ConfigService],
   imports: [ConfigModule],
+  inject: [ConfigService],
   useFactory: async (configService: ConfigService) => ({
     secret: configService.get<string>('JWT_SECRET'),
     signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES_IN') },
@@ -21,10 +21,10 @@ const jwtModule = JwtModule.registerAsync({
 }); 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), PassportModule, ConfigModule, jwtModule, AttrsModule],
+  imports: [ConfigModule, PassportModule, jwtModule, AttrsModule, TypeOrmModule.forFeature([User])],
   controllers: [AuthController],
   providers: [AuthService, LocalStorage, JwtStorage, CacheService],
-  exports: [AuthService, jwtModule],
+  exports: [AuthService],
 })
 
 export class AuthModule {}

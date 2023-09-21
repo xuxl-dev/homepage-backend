@@ -2,10 +2,11 @@ import { compareSync } from 'bcryptjs';
 import { PassportStrategy } from '@nestjs/passport';
 import { IStrategyOptions, Strategy } from 'passport-local';
 import { User } from '../user/entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+@Injectable()
 export class LocalStorage extends PassportStrategy(Strategy) {
   constructor(
     @InjectRepository(User)

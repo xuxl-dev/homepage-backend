@@ -55,7 +55,6 @@ import { MongooseModule } from '@nestjs/mongoose';
       },
     }),
     UserModule,
-    AuthModule,
     RedisModule,
     InternalMessageModule,
     GroupModule,
@@ -71,6 +70,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     WechatbotModule,
     SocketIoModule,
     CronModule,
+    AuthModule,
     ScheduleModule.forRoot(),
     BullModule.forRoot({
       redis: {

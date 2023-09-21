@@ -1,31 +1,29 @@
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException, Request, Req } from '@nestjs/common';
+import { UnauthorizedException, Request, Req, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { StrategyOptions, Strategy, ExtractJwt } from 'passport-jwt';
-import { User } from '../user/entities/user.entity';
 import { AuthService } from './auth.service';
-import { InjectRepository } from '@nestjs/typeorm';
 import { CacheService } from '../db/redis/cache.service';
+import { User } from '../user/entities/user.entity';
 
+@Injectable()
 export class JwtStorage extends PassportStrategy(Strategy) {
   constructor(
-    @InjectRepository(User)
-    private readonly configService: ConfigService,
     private readonly authService: AuthService,
-    private readonly cacheService: CacheService
+    private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: configService.get('JWT_SECRET'),
+      secretOrKey: configService.getOrThrow('JWT_SECRET'),
       signOptions: {
-        expiresIn: configService.get('JWT_EXPIRES_IN'),
+        expiresIn: configService.get('JWT_EXPIRES_IN') ?? 86400,
       },
       passReqToCallback: true,
     } as StrategyOptions);
   }
 
   async validate(@Req() req: Request, user: Partial<User>) {
-
     const existUser = await this.authService.getUser(user);
     if (!existUser) {
       throw new UnauthorizedException('User not found');
