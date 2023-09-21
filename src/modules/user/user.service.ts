@@ -20,19 +20,18 @@ export class UserService {
     const { username } = createUser;
     const existUser = await this.usersRepository.findOne({
       where: { username },
-    });
+    })
     
     if(existUser){
         throw new HttpException("user already exist", HttpStatus.BAD_REQUEST)
     }
 
     const newUser = this.usersRepository.create(createUser)
-    const attr = new Attr();
-    attr.attribute = {};
-    newUser.attributes = Promise.resolve(attr);
+    const attr = new Attr()
+    attr.attribute = {}
+    newUser.attributes = Promise.resolve(attr)
 
-    await this.usersRepository.save(newUser);
-    return await this.usersRepository.findOne({where:{username}}) 
+    return await this.usersRepository.save(newUser)
   } 
 
   async create(createUserDto: CreateUserDto) {

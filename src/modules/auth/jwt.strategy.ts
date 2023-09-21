@@ -43,37 +43,15 @@ export class JwtStorage extends PassportStrategy(Strategy) {
     // if expired, token is not in redis
     const token = await this.cacheService.get('token:', user.id.toString());
     if (!token) {
-      console.log('token is expired');
-      throw new UnauthorizedException({
-        data: {
-          isLogin: false,
-        },
-        errorCode: '401',
-        errorMessage: '已登出的会话',
-        success: true,
-      });
+      throw new UnauthorizedException('Token expired')
     }
     const auth_header = req.headers['authorization']?.split(' ')
     if (!auth_header|| auth_header.length !== 2) {
-      throw new UnauthorizedException({
-        data: {
-          isLogin: false,
-        },
-        errorCode: '401',
-        errorMessage: '非法参数',
-        success: true,
-      });
+      throw new UnauthorizedException('illegal token');
     }
     const header_token = auth_header[1];
     if(token !== header_token) {
-      throw new UnauthorizedException({
-        data: {
-          isLogin: false,
-        },
-        errorCode: '401',
-        errorMessage: '无效的会话',
-        success: true,
-      });
+      throw new UnauthorizedException('illegal token');
     }
 
     // if token is not expired, update token expire time
