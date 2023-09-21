@@ -1,10 +1,8 @@
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
-import { Geographic } from "./geographic.entity";
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcryptjs';
-import { Exclude, Expose, Transform } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
-// import { Comment } from "../../comment/entities/comment.entity";
-import { Chatgroup as ChatGroup } from "src/modules/chatgroup/entities/chatgroup.entity";
+import { ChatGroup } from "src/modules/chatgroup/entities/chatgroup.entity";
 
 @Entity('user')
 export class User {

@@ -1,17 +1,15 @@
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException, Request, Req, Logger } from '@nestjs/common';
+import { UnauthorizedException, Request, Req } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { StrategyOptions, Strategy, ExtractJwt, JwtFromRequestFunction } from 'passport-jwt';
+import { StrategyOptions, Strategy, ExtractJwt } from 'passport-jwt';
 import { User } from '../user/entities/user.entity';
 import { AuthService } from './auth.service';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CacheService } from '../db/redis/cache.service';
 
 export class JwtStorage extends PassportStrategy(Strategy) {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
     private readonly cacheService: CacheService

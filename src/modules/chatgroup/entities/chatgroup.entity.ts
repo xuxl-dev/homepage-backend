@@ -6,7 +6,7 @@ import { Column, Entity, Index, JoinTable, ManyToMany, OneToMany, PrimaryGenerat
 //TypeORM https://typeorm.bootcss.com/
 // better use https://typeorm.io/
 @Entity()
-export class Chatgroup {
+export class ChatGroup {
   @PrimaryGeneratedColumn()
   id: number
 
