@@ -30,15 +30,7 @@ export class JwtStorage extends PassportStrategy(Strategy) {
 
     const existUser = await this.authService.getUser(user);
     if (!existUser) {
-      Logger.debug(`not existUser`);
-      throw new UnauthorizedException({
-        data: {
-          isLogin: false,
-        },
-        errorCode: '401',
-        errorMessage: '未登录',
-        success: true,
-      });
+      throw new UnauthorizedException('User not found');
     }
     // if expired, token is not in redis
     const token = await this.cacheService.get('token:', user.id.toString());
