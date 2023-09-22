@@ -20,12 +20,14 @@ export class SocketIoService {
     private readonly offlineMessageService: OfflineMessageService,
     @InjectQueue('message')
     private readonly messageQueue: Queue
-  ) { }
+  ) {}
 
-  roomManager = new RoomManager()
-
-  @WebSocketServer()
-  io: Server;
+  roomManager = RoomManager.instance()
+  io: Server
+  bindIoServer(server: Server) {
+    this.io = server
+    this.roomManager.bindIoServer(server)
+  }
 
   async retriveAndSync(data: RetriveMessageDto, clientId: number) {
     const offlineMessages = await this.offlineMessageService.retrive(

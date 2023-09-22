@@ -1,7 +1,7 @@
 import { Job } from 'bull';
 import { OnQueueFailed, Process } from '@nestjs/bull';
 import { Processor } from '@nestjs/bull';
-import { Message } from '../internal-message/entities/message-new.entity';
+import { Message_old } from '../internal-message/entities/message-new.entity';
 import { Dispatcher } from './dispatcher';
 
 @Processor('message')
@@ -18,7 +18,7 @@ export class MessageQueue {
    * @returns 
    */
   @Process('send')
-  send(job: Job<Message>) {
+  send(job: Job<Message_old>) {
     console.debug('Message dispatched', job.data)
     try {
       this.dispatcher.dispatch(job.data)

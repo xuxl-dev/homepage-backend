@@ -1,11 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { MessageFlag, MsgId } from '../entities/message-new.entity';
+import { ACKMsgType, MessageFlag, MsgId } from '../entities/message-new.entity';
+import { snowflake } from 'src/modules/socket-io/snowflake';
 
-export type MessageDocument = HydratedDocument<Message2>;
+export type MessageDocument = HydratedDocument<Message>;
 
 @Schema()
-export class Message2 {
+export class Message {
+  @Prop()
+  msgId: MsgId = snowflake.nextId().toString()
+
   @Prop()
   senderId: number
 
@@ -25,4 +29,26 @@ export class Message2 {
   flag: number = MessageFlag.NONE
 }
 
-export const MessageSchema = SchemaFactory.createForClass(Message2);
+export const MessageSchema = SchemaFactory.createForClass(Message)
+
+export function isValidACK(msg: Message) {
+  return !!(msg.flag & MessageFlag.ACK)
+}
+
+export function parseACK(msg: Message) {
+  if (typeof msg.content === 'string') {
+    return JSON.parse(msg.content as string) as {
+      ackMsgId: MsgId,
+      type: ACKMsgType,
+    }
+  } else {
+    return msg.content as {
+      ackMsgId: MsgId,
+      type: ACKMsgType,
+    }
+  }
+}
+
+export function isFlagSet(msg: Message, flag: MessageFlag) {
+  return !!(msg.flag & flag)
+}

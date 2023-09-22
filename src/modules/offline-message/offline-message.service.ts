@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
-import { Message as Message_old } from '../internal-message/entities/message-new.entity';
+import { Message_old as Message_old } from '../internal-message/entities/message-new.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Message2 as Message } from '../internal-message/schemas/message.schema';
+import { Message as Message } from '../internal-message/schemas/message.schema';
 
 
 

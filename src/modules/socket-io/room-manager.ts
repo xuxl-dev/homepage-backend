@@ -1,60 +1,76 @@
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 
+class Room {
+  name: string;
+  /**
+   * Set of all sockets in this room, may contains invalid sockets
+   */
+  sockets: Set<Socket>;
+  constructor(name: string) {
+    this.name = name;
+    this.sockets = new Set<Socket>();
+  }
+}
+
+// TODO: rewrite this class
 export class RoomManager {
+  private static _instance: RoomManager;
+
+  public static instance() {
+    if (!this._instance) {
+      this._instance = new RoomManager();
+    }
+    return this._instance;
+  }
+  
+  io: Server
+  
+  bindIoServer(server: Server) {
+    this.io = server
+  }
+
+  private constructor() { }
   /**
-   * Set of all room ids
+   * room id to room
    */
-  private rooms = new Set<string>();
+  private rooms = new Map<string, Room>();
   /**
-   * Map from room id to socket ids
+   * Map from room to socket ids
    */
-  private roomToSocketMap = new Map<string, Set<string>>();
+  private roomToSocketMap = new Map<Room, Set<string>>();
 
   public createRoom(roomId: string) {
     if (this.rooms.has(roomId)) {
       throw new Error('room already exists');
     }
-    this.rooms.add(roomId);
-    this.roomToSocketMap.set(roomId, new Set<string>());
+    const room = new Room(roomId)
+    this.rooms.set(roomId, room);
+    this.roomToSocketMap.set(room, new Set<string>());
   }
 
   public getRoom(roomId: string) {
-    return this.roomToSocketMap.get(roomId);
+    return this.rooms.get(roomId);
   }
 
   public deleteRoom(roomId: string) {
+    this.roomToSocketMap.delete(this.getRoom(roomId));
     this.rooms.delete(roomId);
-    this.roomToSocketMap.delete(roomId);
   }
 
   public joinRoom(roomId: string, socket: Socket) {
     if (!this.rooms.has(roomId)) {
       throw new Error('room does not exist');
     }
-    this.roomToSocketMap.get(roomId).add(socket.id);
+    this.roomToSocketMap.get(this.rooms.get(roomId)).add(socket.id);
   }
 
   public leaveRoom(roomId: string, socket: Socket) {
     if (!this.rooms.has(roomId)) {
       throw new Error('room does not exist');
     }
-    this.roomToSocketMap.get(roomId).delete(socket.id);
+    this.roomToSocketMap.get(this.rooms.get(roomId)).delete(socket.id);
   }
 
-  /**
-   * You shall not call this
-   * @param socket 
-   * @returns 
-   */
-  public getRoomsOfSocket(socket: Socket) {
-    const rooms = new Set<string>();
-    for (const [roomId, socketIds] of this.roomToSocketMap) {
-      if (socketIds.has(socket.id)) {
-        rooms.add(roomId);
-      }
-    }
-    return rooms;
-  }
 
   public getRooms() {
     return this.rooms;
@@ -65,6 +81,6 @@ export class RoomManager {
   }
 
   public getSocketIdsInRoom(roomId: string) {
-    return this.roomToSocketMap.get(roomId);
+    return this.roomToSocketMap.get(this.getRoom(roomId));
   }
 }

@@ -25,3 +25,9 @@ export class UserOfflineException extends Error {
     super(message);
   }
 }
+
+export class RoomNotExistException extends Error {
+  constructor(message?: string) {
+    super(message);
+  }
+}

@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { messageToken } from "./Tokens";
-import { Message } from "../internal-message/entities/message-new.entity";
+import { Message } from "../internal-message/schemas/message.schema";
 
 export class Messenger {
   _socket: Socket

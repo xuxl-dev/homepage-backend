@@ -25,7 +25,7 @@ export enum ACKMsgType {
 export type MsgId = string
 
 @Entity()
-export class Message {
+export class Message_old {
   @PrimaryColumn('bigint')
   msgId: MsgId = snowflake.nextId().toString()
 
@@ -67,8 +67,8 @@ export class Message {
 
   constructor() { }
 
-  static ACK(toMessage: Message, type: ACKMsgType) {
-    const msg = new Message()
+  static ACK(toMessage: Message_old, type: ACKMsgType) {
+    const msg = new Message_old()
     msg.flag = MessageFlag.ACK
     msg.content = {
       ackMsgId: toMessage.msgId.toString(),
@@ -80,7 +80,7 @@ export class Message {
   }
 
   static new(createMessageDto: CreateMessageDto, senderId: number) {
-    const msg = new Message()
+    const msg = new Message_old()
     msg.receiverId = createMessageDto.receiverId
     msg.content = createMessageDto.content
     msg.flag = createMessageDto.flag
@@ -89,7 +89,7 @@ export class Message {
   }
 
   static parse(object) {
-    const msg = new Message()
+    const msg = new Message_old()
     msg.receiverId = object.receiverId
     msg.content = object.content
     msg.flag = object.flag
@@ -106,11 +106,11 @@ export class Message {
   }
 }
 
-export function isValidACK(msg: Message) {
+export function isValidACK(msg: Message_old) {
   return !!(msg.flag & MessageFlag.ACK)
 }
 
-export function parseACK(msg: Message) {
+export function parseACK(msg: Message_old) {
   if (typeof msg.content === 'string') {
     return JSON.parse(msg.content as string) as {
       ackMsgId: MsgId,
