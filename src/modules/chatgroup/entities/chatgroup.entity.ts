@@ -14,4 +14,7 @@ export class ChatGroup {
   @ManyToMany(() => User, (user) => user.joinedChatGroups)
   @JoinTable()
   members: User[];
+
+  //TODO allow any user to join this group flag
+  
 }

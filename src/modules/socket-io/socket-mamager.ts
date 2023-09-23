@@ -1,5 +1,6 @@
 import { Socket } from "socket.io";
 import { Messenger } from "./messenger";
+import { Injectable } from "@nestjs/common";
 
 /**
  * SocketManager
@@ -7,16 +8,8 @@ import { Messenger } from "./messenger";
  * This class is responsible for managing all socket connections
  * mapping user id to socket id
  */
+@Injectable()
 export class SocketManager {
-
-  private static _instance: SocketManager = new SocketManager()
-
-  public static instance() {
-    return this._instance
-  }
-
-  private constructor() {}
-
   /**
    * Map from user id to socket id
    */

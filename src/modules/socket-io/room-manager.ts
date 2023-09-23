@@ -1,4 +1,6 @@
+import { Injectable } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
+
 
 class Room {
   name: string;
@@ -11,25 +13,15 @@ class Room {
     this.sockets = new Set<Socket>();
   }
 }
-
 // TODO: rewrite this class
+@Injectable()
 export class RoomManager {
-  private static _instance: RoomManager;
-
-  public static instance() {
-    if (!this._instance) {
-      this._instance = new RoomManager();
-    }
-    return this._instance;
-  }
-  
+ 
   io: Server
   
   bindIoServer(server: Server) {
     this.io = server
   }
-
-  private constructor() { }
   /**
    * room id to room
    */
@@ -53,6 +45,14 @@ export class RoomManager {
   }
 
   public deleteRoom(roomId: string) {
+    // remove all sockets in this room
+    this.roomToSocketMap.get(this.getRoom(roomId)).forEach(socketId => {
+      const socket = this.io.sockets.sockets.get(socketId);
+      if (socket) {
+        socket.leave(roomId);
+      }
+    })
+
     this.roomToSocketMap.delete(this.getRoom(roomId));
     this.rooms.delete(roomId);
   }
@@ -62,6 +62,7 @@ export class RoomManager {
       throw new Error('room does not exist');
     }
     this.roomToSocketMap.get(this.rooms.get(roomId)).add(socket.id);
+    socket.join(roomId)
   }
 
   public leaveRoom(roomId: string, socket: Socket) {
@@ -69,8 +70,8 @@ export class RoomManager {
       throw new Error('room does not exist');
     }
     this.roomToSocketMap.get(this.rooms.get(roomId)).delete(socket.id);
+    socket.leave(roomId)
   }
-
 
   public getRooms() {
     return this.rooms;

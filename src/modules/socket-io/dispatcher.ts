@@ -38,7 +38,7 @@ class EndProcessorLayer extends ProcessorBase {
  * this layer times all messages, if ack is not received in time, fall back to offline message
  */
 class ACKCountingLayer extends ProcessorBase {
-  timeout = 15 * 1000
+  static timeout = 15 * 1000
   private pendingMessages: Map<MsgId, () => void> = new Map()
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     if (isValidACK(msg)) {
@@ -48,7 +48,9 @@ class ACKCountingLayer extends ProcessorBase {
         this.pendingMessages.delete(ackMsgId)
       }
     } else {
-      if (msg.flag & MessageFlag.DO_NOT_STORE) { // just let message fail, don't store it
+      if (isFlagSet(msg, MessageFlag.DO_NOT_STORE) // just let message fail, don't store it
+        || isFlagSet(msg, MessageFlag.BROADCAST)  // broadcast message will always be stored, but no need ack from anyone
+      ) {
         return this.next(msg)
       }
 
@@ -58,7 +60,7 @@ class ACKCountingLayer extends ProcessorBase {
         this.ctx.offlineMessageService.sendMessageOrFail(msg).catch(e => {
           console.error(e)
         })
-      }, this.timeout)
+      }, ACKCountingLayer.timeout)
 
       this.pendingMessages.set(msg.msgId, () => {
         clearTimeout(messageFail)
@@ -97,16 +99,16 @@ type DispatcherCtx = {
 @Injectable()
 export class Dispatcher {
   ctx: DispatcherCtx
-  socketManager = SocketManager.instance()
-  roomManager = RoomManager.instance()
   io: Server
-  
+
   bindIoServer(server: Server) {
     this.io = server
   }
-  
+
   constructor(
     private readonly offlineMessageService: OfflineMessageService,
+    private readonly roomManager: RoomManager,
+    private readonly socketManager: SocketManager,
   ) {
     this.ctx = {
       offlineMessageService,
@@ -145,13 +147,14 @@ export class Dispatcher {
 
   async castMessage(message: Message) {
     // if this is a broadcast message, receiver id is group id
-    if (isFlagSet(message, MessageFlag.BROADCAST)){ // TODO: clean this, use strategy pattern
+    if (isFlagSet(message, MessageFlag.BROADCAST)) { // TODO: clean this, use strategy pattern
       const room = this.roomManager.getRoom(message.receiverId.toString())
       if (room) {
-        //TODO: this will only send to online users, 
+        // TODO: this will only send to online users, 
         //offline users will not receive this message
         this.io.to(room.name).emit('message', message)
-
+        // archive message for offline users
+        this.offlineMessageService.sendMessageOrFail(message)
         // TODO: archive this message
         // for these offline users or these who failed to receive this message
         // they are able to retrive this message from offline message service

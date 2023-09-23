@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { ACKMsgType, MessageFlag, MsgId } from '../entities/message-new.entity';
 import { snowflake } from 'src/modules/socket-io/snowflake';
+import { CreateMessageDto } from '../dto/create-message.dto';
 
 export type MessageDocument = HydratedDocument<Message>;
 
@@ -27,6 +28,36 @@ export class Message {
 
   @Prop({ required: true })
   flag: number = MessageFlag.NONE
+
+  static ACK(toMessage: Message, type: ACKMsgType) {
+    const msg = new Message()
+    msg.flag = MessageFlag.ACK
+    msg.content = {
+      ackMsgId: toMessage.msgId.toString(),
+      type,
+    }
+    msg.receiverId = toMessage.senderId
+    msg.senderId = toMessage.receiverId
+    return msg
+  }
+
+  static new(createMessageDto: CreateMessageDto, senderId: number) {
+    const msg = new Message()
+    msg.receiverId = createMessageDto.receiverId
+    msg.content = createMessageDto.content
+    msg.flag = createMessageDto.flag
+    msg.senderId = senderId
+    return msg
+  }
+
+  static parse(object) {
+    const msg = new Message()
+    msg.receiverId = object.receiverId
+    msg.content = object.content
+    msg.flag = object.flag
+    msg.senderId = object.senderId
+    return msg
+  }
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message)

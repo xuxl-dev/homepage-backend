@@ -15,15 +15,18 @@ const logger = new Logger('SocketIoService')
 @Injectable()
 export class SocketIoService {
   constructor(
+    @InjectQueue('message')
+    private readonly messageQueue: Queue,
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
     private readonly offlineMessageService: OfflineMessageService,
-    @InjectQueue('message')
-    private readonly messageQueue: Queue
-  ) {}
+    private readonly roomManager: RoomManager,
+    private readonly socketManager : SocketManager,
+  ) { }
 
-  roomManager = RoomManager.instance()
+
   io: Server
+  
   bindIoServer(server: Server) {
     this.io = server
     this.roomManager.bindIoServer(server)
@@ -78,8 +81,6 @@ export class SocketIoService {
   async getUserFromSocket(socket: Socket) {
     return await this.authService.getUserByToken(this.getJwtTokenFromSocket(socket));
   }
-
-  socketManager = SocketManager.instance()
 
   addSocket(id: number, socket: Socket) {
     // if already exist, disconnect the old one

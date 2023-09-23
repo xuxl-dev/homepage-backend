@@ -3,13 +3,14 @@ import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { messageToken } from './Tokens';
-import { ACKMsgType, Message_old } from '../internal-message/entities/message-new.entity';
+import { ACKMsgType } from '../internal-message/entities/message-new.entity';
 import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { Dispatcher } from './dispatcher';
+import { Message } from '../internal-message/schemas/message.schema';
 
 const logger = new Logger('SocketIoGateway')
 
@@ -27,7 +28,6 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.socketIoService.bindIoServer(server)
     this.dispatcher.bindIoServer(server)
   }
-
 
   handleDisconnect(client: Socket) {
     logger.debug(`user disconnected: `, client.user.id)
@@ -60,9 +60,9 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() data: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const msg = Message_old.new(data, client.user.id)
+    const msg = Message.new(data, client.user.id)
     await this.messageQueue.add('send', msg)
-    return Message_old.ACK(msg, ACKMsgType.DELIVERED)
+    return Message.ACK(msg, ACKMsgType.DELIVERED)
   }
 
   @SubscribeMessage('syncMessage')

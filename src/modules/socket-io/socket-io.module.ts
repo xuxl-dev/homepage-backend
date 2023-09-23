@@ -7,6 +7,8 @@ import { OfflineMessageModule } from '../offline-message/offline-message.module'
 import { BullModule } from '@nestjs/bull';
 import { Dispatcher } from './dispatcher';
 import { MessageQueue } from './message.consumer';
+import { RoomManager } from './room-manager';
+import { SocketManager } from './socket-mamager';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { MessageQueue } from './message.consumer';
     BullModule.registerQueue({
       name: 'message',
     })],
-  providers: [SocketIoGateway, SocketIoService, Dispatcher, MessageQueue],
+  providers: [SocketIoGateway, SocketIoService, Dispatcher, MessageQueue, RoomManager, SocketManager],
   exports: [SocketIoService]
 })
 export class SocketIoModule { }
