@@ -17,7 +17,9 @@ import { SocketManager } from './socket-mamager';
     OfflineMessageModule,
     BullModule.registerQueue({
       name: 'message',
-    })],
+    }),
+    ChatgroupModule,
+  ],
   providers: [SocketIoGateway, SocketIoService, Dispatcher, MessageQueue, RoomManager, SocketManager],
   exports: [SocketIoService]
 })

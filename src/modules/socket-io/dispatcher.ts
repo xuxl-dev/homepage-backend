@@ -148,7 +148,7 @@ export class Dispatcher {
   async castMessage(message: Message) {
     // if this is a broadcast message, receiver id is group id
     if (isFlagSet(message, MessageFlag.BROADCAST)) { // TODO: clean this, use strategy pattern
-      const room = this.roomManager.getRoom(message.receiverId.toString())
+      const room = this.roomManager.getRoom(message.receiverId)
       if (room) {
         // TODO: this will only send to online users, 
         //offline users will not receive this message

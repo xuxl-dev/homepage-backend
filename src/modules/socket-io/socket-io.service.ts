@@ -10,6 +10,7 @@ import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
+import { JoinRoomDto } from './dto/join-room.dto';
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -21,12 +22,12 @@ export class SocketIoService {
     private readonly chatGroupService: ChatgroupService,
     private readonly offlineMessageService: OfflineMessageService,
     private readonly roomManager: RoomManager,
-    private readonly socketManager : SocketManager,
+    private readonly socketManager: SocketManager,
   ) { }
 
 
   io: Server
-  
+
   bindIoServer(server: Server) {
     this.io = server
     this.roomManager.bindIoServer(server)
@@ -62,8 +63,8 @@ export class SocketIoService {
     this.chatGroupService.create(createSocketIoDto);
   }
 
-  joinRoom(room: string, socket: Socket) {
-    this.roomManager.joinRoom(room, socket);
+  joinRoom(room: JoinRoomDto, socket: Socket) {
+    this.roomManager.joinRoom(room.roomId, socket);
   }
 
   leaveRoom(room: string, socket: Socket) {

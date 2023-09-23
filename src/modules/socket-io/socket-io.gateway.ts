@@ -11,6 +11,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { Dispatcher } from './dispatcher';
 import { Message } from '../internal-message/schemas/message.schema';
+import { JoinRoomDto } from './dto/join-room.dto';
 
 const logger = new Logger('SocketIoGateway')
 
@@ -83,15 +84,17 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() data: string,
+    @MessageBody() data: JoinRoomDto,
     @ConnectedSocket() client: Socket,
-  ): string {
+  ) {
     //TODO check if room exists
     //TODO check if user is in room
     //TODO check if user is allowed to join room
     console.log("Join room: " + data)
     this.socketIoService.joinRoom(data, client)
-    return 'joined'
+    return {
+      room: data,
+    }
   }
 
   @SubscribeMessage('leaveRoom')
