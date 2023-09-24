@@ -12,6 +12,7 @@ import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { JoinRoomDto } from './dto/join-room.dto';
 import { UserService } from '../user/user.service';
+import { Message } from '../internal-message/schemas/message.schema';
 
 
 const logger = new Logger('SocketIoService')
@@ -37,6 +38,7 @@ export class SocketIoService {
   }
 
   async retriveAndSync(data: RetriveMessageDto, clientId: number) {
+    let tot = 0
     // forward one to one messages to client
     const toClientOfflineMessages = await this.offlineMessageService.retrive(
       clientId,
@@ -46,8 +48,9 @@ export class SocketIoService {
         pageSize: data.pageSize
       }
     )
+    tot += toClientOfflineMessages.length
     for (const msg of toClientOfflineMessages) {
-      this.messageQueue.add('send', msg) // no wait
+      this.enqueueMessage(msg) // no wait
     }
 
     // forward group messages to client
@@ -62,15 +65,16 @@ export class SocketIoService {
           pageSize: data.pageSize
         }
       )
+      tot += toGroupMessages.length
       for (const msg of toGroupMessages) {
         // rewrite groupId to clientId
         msg.receiverId = clientId
-        this.messageQueue.add('send', msg) 
+        this.enqueueMessage(msg)
       }
     }
 
     return {
-      tot: toClientOfflineMessages.length
+      messageNoTotal: tot,
     }
   }
 
@@ -118,5 +122,9 @@ export class SocketIoService {
 
   removeSocket(id: number) {
     this.socketManager.delete(id);
+  }
+
+  enqueueMessage(message: Message) {
+    this.messageQueue.add('send', message)
   }
 }
