@@ -9,11 +9,13 @@ import { Dispatcher } from './dispatcher';
 import { MessageQueue } from './message.consumer';
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     AuthModule,
     ChatgroupModule,
+    UserModule,
     OfflineMessageModule,
     BullModule.registerQueue({
       name: 'message',

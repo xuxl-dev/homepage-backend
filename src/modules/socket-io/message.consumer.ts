@@ -1,16 +1,14 @@
 import { Job } from 'bull';
 import { OnQueueFailed, Process } from '@nestjs/bull';
 import { Processor } from '@nestjs/bull';
-import { Message_old } from '../internal-message/entities/message-new.entity';
 import { Dispatcher } from './dispatcher';
+import { Message } from '../internal-message/schemas/message.schema';
 
 @Processor('message')
 export class MessageQueue {
   constructor(
     private readonly dispatcher: Dispatcher,
-  ) { 
-    console.debug('MessageQueue created')
-  }
+  ) { }
 
   /**
    * Non-blocking send message
@@ -18,7 +16,7 @@ export class MessageQueue {
    * @returns 
    */
   @Process('send')
-  send(job: Job<Message_old>) {
+  send(job: Job<Message>) {
     console.debug('Message dispatched', job.data)
     try {
       this.dispatcher.dispatch(job.data)

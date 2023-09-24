@@ -1,8 +1,29 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { ACKMsgType, MessageFlag, MsgId } from '../entities/message-new.entity';
 import { snowflake } from 'src/modules/socket-io/snowflake';
 import { CreateMessageDto } from '../dto/create-message.dto';
+
+export enum MessageFlag {
+  'NONE' = 0,   
+  'DO_NOT_STORE' = 1 << 0, // do not store this message in database, may fail to deliver
+  'ACK' = 1 << 1, // this message is an ACK message
+  'BROADCAST' = 1 << 2, // this message is a broadcast message
+  'E2EE' = 1 << 3, // this message is encrypted
+  'KEY_EXCHANGE' = 1 << 4, // this message is a key exchange message
+  'WITHDRAW' = 1 << 5, // this message is a withdraw message
+  'COMPLEX' = 1 << 6, // this message is a complex message, the content is a nested message
+  'PRESAVED_RSA' = 1 << 7 //use presaved RSA key to encrypt (the target user must have a presaved RSA key)
+  //...
+}
+
+export enum ACKMsgType {
+  'DELIVERED',
+  'RECEIVED',
+  'READ',
+}
+
+export type MsgId = string
+
 
 export type MessageDocument = HydratedDocument<Message>;
 

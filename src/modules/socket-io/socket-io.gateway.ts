@@ -3,14 +3,13 @@ import { SocketIoService } from './socket-io.service';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { messageToken } from './Tokens';
-import { ACKMsgType } from '../internal-message/entities/message-new.entity';
 import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { Dispatcher } from './dispatcher';
-import { Message } from '../internal-message/schemas/message.schema';
+import { ACKMsgType, Message } from '../internal-message/schemas/message.schema';
 import { JoinRoomDto } from './dto/join-room.dto';
 
 const logger = new Logger('SocketIoGateway')

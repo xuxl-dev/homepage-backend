@@ -1,9 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { MessageFlag, MsgId } from '../internal-message/entities/message-new.entity';
 import { OfflineMessageService } from "../offline-message/offline-message.service";
 import { RoomNotExistException, UserOfflineException } from "../internal-message/internal-message.service";
 import { SocketManager } from "./socket-mamager";
-import { Message, isFlagSet, isValidACK, parseACK } from "../internal-message/schemas/message.schema";
+import { Message, MessageFlag, MsgId, isFlagSet, isValidACK, parseACK } from "../internal-message/schemas/message.schema";
 import { RoomManager } from "./room-manager";
 import { Server } from "socket.io";
 
@@ -74,7 +73,7 @@ class ACKCountingLayer extends ProcessorBase {
 class ForwardingLayer extends ProcessorBase {
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     // try send online message, don't care about the result, fail is processed in ack counting layer
-    this.ctx.dispatcher.castMessage(msg).catch(e => {
+    await this.ctx.dispatcher.castMessage(msg).catch(e => {
       if (e instanceof UserOfflineException) {
         // this is not an error, just a normal case
         // ignore this, if this message needs to be stored, it will be stored in ack counting layer

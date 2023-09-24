@@ -11,6 +11,5 @@ export default function configGenerator() {
     envFilePath,
     isGlobal: true,
   })
-  console.log(`config generated`);
   return ret
 }
