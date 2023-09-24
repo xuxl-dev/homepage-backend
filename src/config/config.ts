@@ -11,6 +11,8 @@ export default function configGenerator() {
     envFilePath,
     isGlobal: true,
   })
-  console.log(`config generated`);
   return ret
 }
+
+
+export const MESSAGE_TTL = '30d'

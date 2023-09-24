@@ -57,7 +57,9 @@ export class UserService {
 
   findOne(id: number) {
     if (isNaN(id)) throw new HttpException('id must be a number', HttpStatus.BAD_REQUEST);
-    return this.usersRepository.findOne({ where: { id }});
+    return this.usersRepository.findOne({ 
+      where: { id },
+    });
   }
 
   findByUsername(username: string) {

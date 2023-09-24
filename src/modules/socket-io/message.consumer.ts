@@ -1,16 +1,14 @@
 import { Job } from 'bull';
 import { OnQueueFailed, Process } from '@nestjs/bull';
 import { Processor } from '@nestjs/bull';
-import { Message } from '../internal-message/entities/message-new.entity';
 import { Dispatcher } from './dispatcher';
+import { Message } from '../internal-message/schemas/message.schema';
 
 @Processor('message')
 export class MessageQueue {
   constructor(
     private readonly dispatcher: Dispatcher,
-  ) { 
-    console.debug('MessageQueue created')
-  }
+  ) { }
 
   /**
    * Non-blocking send message

@@ -1,27 +1,35 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { SocketIoService } from './socket-io.service';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { messageToken } from './Tokens';
-import { ACKMsgType, Message } from '../internal-message/entities/message-new.entity';
 import { CreateMessageDto } from '../internal-message/dto/create-message.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { Dispatcher } from './dispatcher';
+import { ACKMsgType, Message } from '../internal-message/schemas/message.schema';
+import { JoinRoomDto } from './dto/join-room.dto';
 
 const logger = new Logger('SocketIoGateway')
 
 @WebSocketGateway(3001, {
   cors: true,
 })
-export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   constructor(
     private readonly socketIoService: SocketIoService,
     @InjectQueue('message') private readonly messageQueue: Queue,
-  ) { }
+    private readonly dispatcher: Dispatcher, // only refered to bind Io server
+  ) {}
 
-  handleDisconnect(client) {
+  afterInit(server: Server) {
+    this.socketIoService.bindIoServer(server)
+    this.dispatcher.bindIoServer(server)
+  }
+
+  handleDisconnect(client: Socket) {
     logger.debug(`user disconnected: `, client.user.id)
     this.socketIoService.removeSocket(client.user.id)
   }
@@ -75,15 +83,17 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() data: string,
+    @MessageBody() data: JoinRoomDto,
     @ConnectedSocket() client: Socket,
-  ): string {
+  ) {
     //TODO check if room exists
     //TODO check if user is in room
     //TODO check if user is allowed to join room
     console.log("Join room: " + data)
     this.socketIoService.joinRoom(data, client)
-    return 'joined'
+    return {
+      room: data,
+    }
   }
 
   @SubscribeMessage('leaveRoom')

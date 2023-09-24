@@ -1,5 +1,5 @@
 import { MaxLength } from "class-validator";
-import { MsgId } from "src/modules/internal-message/entities/message-new.entity";
+import { MsgId } from "src/modules/internal-message/schemas/message.schema";
 
 export class QueryMessageDto {
   @MaxLength(30)

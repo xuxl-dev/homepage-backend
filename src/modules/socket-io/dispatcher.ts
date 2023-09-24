@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { ACKMsgType, Message, MessageFlag, MsgId, isValidACK, parseACK } from '../internal-message/entities/message-new.entity';
 import { OfflineMessageService } from "../offline-message/offline-message.service";
-import { UserOfflineException } from "../internal-message/internal-message.service";
+import { RoomNotExistException, UserOfflineException } from "../internal-message/internal-message.service";
 import { SocketManager } from "./socket-mamager";
+import { Message, MessageFlag, MsgId, isFlagSet, isValidACK, parseACK } from "../internal-message/schemas/message.schema";
+import { RoomManager } from "./room-manager";
+import { Server } from "socket.io";
 
 interface ProcessorLayer {
   next: (msg: Message) => Promise<Message>; // next layer
@@ -35,18 +37,19 @@ class EndProcessorLayer extends ProcessorBase {
  * this layer times all messages, if ack is not received in time, fall back to offline message
  */
 class ACKCountingLayer extends ProcessorBase {
-  timeout = 15 * 1000
+  static timeout = 15 * 1000
   private pendingMessages: Map<MsgId, () => void> = new Map()
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     if (isValidACK(msg)) {
-      const {ackMsgId, type} = parseACK(msg)
-      // console.log(`ACK(${ackMsgId}, ${ACKMsgType[type]}))`)
+      const { ackMsgId } = parseACK(msg)
       if (this.pendingMessages.has(ackMsgId)) { // at least one ack means the message is delivered successfully
         this.pendingMessages.get(ackMsgId)()
         this.pendingMessages.delete(ackMsgId)
       }
     } else {
-      if (msg.flag & MessageFlag.DO_NOT_STORE) { // just let message fail, don't store it
+      if (isFlagSet(msg, MessageFlag.DO_NOT_STORE) // just let message fail, don't store it
+        || isFlagSet(msg, MessageFlag.BROADCAST)  // broadcast message will always be stored, but no need ack from anyone
+      ) {
         return this.next(msg)
       }
 
@@ -56,7 +59,7 @@ class ACKCountingLayer extends ProcessorBase {
         this.ctx.offlineMessageService.sendMessageOrFail(msg).catch(e => {
           console.error(e)
         })
-      }, this.timeout)
+      }, ACKCountingLayer.timeout)
 
       this.pendingMessages.set(msg.msgId, () => {
         clearTimeout(messageFail)
@@ -67,10 +70,10 @@ class ACKCountingLayer extends ProcessorBase {
   }
 }
 
-class ForwardingLayer extends ProcessorBase  {
+class ForwardingLayer extends ProcessorBase {
   process: (msg: Message) => Promise<Message> = async (msg: Message) => {
     // try send online message, don't care about the result, fail is processed in ack counting layer
-    this.ctx.dispatcher.castMessage(msg).catch(e => {
+    await this.ctx.dispatcher.castMessage(msg).catch(e => {
       if (e instanceof UserOfflineException) {
         // this is not an error, just a normal case
         // ignore this, if this message needs to be stored, it will be stored in ack counting layer
@@ -95,14 +98,20 @@ type DispatcherCtx = {
 @Injectable()
 export class Dispatcher {
   ctx: DispatcherCtx
-  socketManager = SocketManager.instance()
+  io: Server
+
+  bindIoServer(server: Server) {
+    this.io = server
+  }
 
   constructor(
     private readonly offlineMessageService: OfflineMessageService,
+    private readonly roomManager: RoomManager,
+    private readonly socketManager: SocketManager,
   ) {
     this.ctx = {
       offlineMessageService,
-      dispatcher:this
+      dispatcher: this
     }
     this.addProcessors([
       new BeginProcessorLayer(),
@@ -136,12 +145,29 @@ export class Dispatcher {
   }
 
   async castMessage(message: Message) {
-    const messenger = this.socketManager.getMessenger(message.receiverId)
-
-    if (messenger) {
-      messenger.castMessage(message)
+    // if this is a broadcast message, receiver id is group id
+    if (isFlagSet(message, MessageFlag.BROADCAST)) { // TODO: clean this, use strategy pattern
+      const room = this.roomManager.getRoom(message.receiverId)
+      if (room) {
+        // TODO: this will only send to online users, 
+        //offline users will not receive this message
+        this.io.to(room.name).emit('message', message)
+        // archive message for offline users
+        this.offlineMessageService.sendMessageOrFail(message)
+        // TODO: archive this message
+        // for these offline users or these who failed to receive this message
+        // they are able to retrive this message from offline message service
+      } else {
+        throw new RoomNotExistException()
+      }
     } else {
-      throw new UserOfflineException()
+      const messenger = this.socketManager.getMessenger(message.receiverId)
+
+      if (messenger) {
+        messenger.castMessage(message)
+      } else {
+        throw new UserOfflineException()
+      }
     }
   }
 }

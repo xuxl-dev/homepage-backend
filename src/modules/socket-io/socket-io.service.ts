@@ -10,25 +10,36 @@ import { RetriveMessageDto } from '../offline-message/dto/retriveMessage.dto';
 import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
+import { JoinRoomDto } from './dto/join-room.dto';
+import { UserService } from '../user/user.service';
+import { Message, MsgId } from '../internal-message/schemas/message.schema';
+
 
 const logger = new Logger('SocketIoService')
 @Injectable()
 export class SocketIoService {
   constructor(
+    @InjectQueue('message')
+    private readonly messageQueue: Queue,
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
+    private readonly userService: UserService,
     private readonly offlineMessageService: OfflineMessageService,
-    @InjectQueue('message')
-    private readonly messageQueue: Queue
+    private readonly roomManager: RoomManager,
+    private readonly socketManager: SocketManager,
   ) { }
 
-  roomManager = new RoomManager()
+  io: Server
 
-  @WebSocketServer()
-  io: Server;
+  bindIoServer(server: Server) {
+    this.io = server
+    this.roomManager.bindIoServer(server)
+  }
 
   async retriveAndSync(data: RetriveMessageDto, clientId: number) {
-    const offlineMessages = await this.offlineMessageService.retrive(
+    let tot = 0
+    // forward one to one messages to client
+    const toClientOfflineMessages = await this.offlineMessageService.retrive(
       clientId,
       data.afterDate,
       {
@@ -36,11 +47,33 @@ export class SocketIoService {
         pageSize: data.pageSize
       }
     )
-    for (const msg of offlineMessages) {
-      this.messageQueue.add('send', msg) // no wait
+    tot += toClientOfflineMessages.length
+    for (const msg of toClientOfflineMessages) {
+      this.enqueueMessage(msg) // no wait
     }
+
+    // forward group messages to client
+    const groups = await (await this.userService.findOne(clientId)).joinedChatGroups
+
+    for (const group of groups) {
+      const toGroupMessages = await this.offlineMessageService.retrive(
+        group.id,
+        data.afterDate,
+        {
+          page: data.page,
+          pageSize: data.pageSize
+        }
+      )
+      tot += toGroupMessages.length
+      for (const msg of toGroupMessages) {
+        // rewrite groupId to clientId
+        msg.receiverId = clientId
+        this.enqueueMessage(msg)
+      }
+    }
+
     return {
-      messageCount: offlineMessages.length
+      messageNoTotal: tot,
     }
   }
 
@@ -57,8 +90,8 @@ export class SocketIoService {
     this.chatGroupService.create(createSocketIoDto);
   }
 
-  joinRoom(room: string, socket: Socket) {
-    this.roomManager.joinRoom(room, socket);
+  joinRoom(room: JoinRoomDto, socket: Socket) {
+    this.roomManager.joinRoom(room.roomId, socket);
   }
 
   leaveRoom(room: string, socket: Socket) {
@@ -77,8 +110,6 @@ export class SocketIoService {
     return await this.authService.getUserByToken(this.getJwtTokenFromSocket(socket));
   }
 
-  socketManager = SocketManager.instance()
-
   addSocket(id: number, socket: Socket) {
     // if already exist, disconnect the old one
     const oldSocket = this.socketManager.getSocket(id)
@@ -90,5 +121,18 @@ export class SocketIoService {
 
   removeSocket(id: number) {
     this.socketManager.delete(id);
+  }
+
+  enqueueMessage(message: Message) {
+    this.messageQueue.add('send', message)
+  }
+
+  withdrawMessage(messageId: MsgId) {
+    //TODO remove from queue: this may not be necessary,
+    // the time in queue is very short
+
+    // remove from db
+    this.offlineMessageService.delete(messageId)
+    
   }
 }

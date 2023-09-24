@@ -69,7 +69,7 @@ export class User {
   deleted_at: Date;
 
   @ManyToMany(() => ChatGroup, chatgroup => chatgroup.members)
-  joinedChatGroups: ChatGroup[];
+  joinedChatGroups: Promise<ChatGroup[]>;
 
   /**
    * this is the public key of the user, used for e2e encryption
