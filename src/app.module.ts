@@ -46,7 +46,15 @@ import { MongooseModule } from '@nestjs/mongoose';
           ],
           // autoLoadEntities: true,
           timezone: '+08:00',
-          cache: true,
+          cache: {
+            type: 'redis',
+            options: {
+              host: config.get('REDIS_HOST'),
+              port: config.get('REDIS_PORT'),
+              password: config.get('REDIS_PASSWORD'),
+              db: config.get('REDIS_DB'),
+            }
+          },
           // migrationsTableName: "migrations",
           // migrations: ["migrations/*.ts"],
           // cli: {
