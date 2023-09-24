@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Message as Message } from '../internal-message/schemas/message.schema';
+import { Message as Message, MsgId } from '../internal-message/schemas/message.schema';
 
 
 /**
@@ -50,17 +50,12 @@ export class OfflineMessageService {
     )
   }
 
-  async deleteBefore(date: Date) : Promise<number> {
-    const expiredMessages = await this.messageModel.deleteMany({ createdAt: { $lte: date } })
-    return expiredMessages.deletedCount
-  }
-
   /**
    * 
    * @param id auto generated mongoose _id
    * @returns 
    */
-  async findOne(id: string) {
+  async findOne(id: bigint) {
     try {
       return await this.messageModel.findById(id)
     } catch (error) {
@@ -73,11 +68,15 @@ export class OfflineMessageService {
    * @param id 
    * @param receiverId not used, but for future use
    */
-  async updateReadCount(id: string, receiverId: number) {
+  async updateReadCount(id: bigint, receiverId: number) {
     const msg = await this.findOne(id)
     if (msg) {
       msg.hasReadCount += 1
       await msg.save()
     }
+  }
+
+  async delete(id: MsgId) {
+    this.messageModel.deleteOne({ msgId: id })
   }
 }

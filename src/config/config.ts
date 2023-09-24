@@ -13,3 +13,6 @@ export default function configGenerator() {
   })
   return ret
 }
+
+
+export const MESSAGE_TTL = '30d'

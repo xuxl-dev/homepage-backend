@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { snowflake } from 'src/modules/socket-io/snowflake';
 import { CreateMessageDto } from '../dto/create-message.dto';
+import { MESSAGE_TTL } from 'src/config/config';
 
 export enum MessageFlag {
   'NONE' = 0,   
@@ -22,26 +23,39 @@ export enum ACKMsgType {
   'READ',
 }
 
-export type MsgId = string
+export type MsgId = bigint
 
 
 export type MessageDocument = HydratedDocument<Message>;
 
 @Schema()
 export class Message {
-  @Prop()
-  msgId: MsgId = snowflake.nextId().toString()
+  @Prop({
+    required: true,
+    unique: true,
+  })
+  msgId: MsgId = snowflake.nextId()
 
-  @Prop()
+  @Prop({
+    required: true,
+    index: true,
+  })
   senderId: number
 
-  @Prop({ required: true })
+  @Prop({ 
+    required: true,
+    index: true,
+  })
   receiverId: number
 
   @Prop({ required: true, type: Object }) // this type is equivalent to Schema.Types.Any
   content: string | object
 
-  @Prop({ required: true })
+  @Prop({ 
+    required: true,
+    type: Date,
+    expires: MESSAGE_TTL,  // auto delete after 30 days
+  })
   sentAt: Date = new Date()
 
   @Prop()
@@ -71,7 +85,7 @@ export class Message {
     return msg
   }
 
-  static parse(object) {
+  static parse(object: { receiverId: number; content: string | object; flag: number; senderId: number; }) {
     const msg = new Message()
     msg.receiverId = object.receiverId
     msg.content = object.content

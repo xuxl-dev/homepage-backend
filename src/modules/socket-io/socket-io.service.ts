@@ -12,7 +12,7 @@ import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { JoinRoomDto } from './dto/join-room.dto';
 import { UserService } from '../user/user.service';
-import { Message } from '../internal-message/schemas/message.schema';
+import { Message, MsgId } from '../internal-message/schemas/message.schema';
 
 
 const logger = new Logger('SocketIoService')
@@ -28,7 +28,6 @@ export class SocketIoService {
     private readonly roomManager: RoomManager,
     private readonly socketManager: SocketManager,
   ) { }
-
 
   io: Server
 
@@ -126,5 +125,14 @@ export class SocketIoService {
 
   enqueueMessage(message: Message) {
     this.messageQueue.add('send', message)
+  }
+
+  withdrawMessage(messageId: MsgId) {
+    //TODO remove from queue: this may not be necessary,
+    // the time in queue is very short
+
+    // remove from db
+    this.offlineMessageService.delete(messageId)
+    
   }
 }
