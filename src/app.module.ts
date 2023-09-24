@@ -46,6 +46,7 @@ import { MongooseModule } from '@nestjs/mongoose';
           ],
           // autoLoadEntities: true,
           timezone: '+08:00',
+          cache: true,
           // migrationsTableName: "migrations",
           // migrations: ["migrations/*.ts"],
           // cli: {

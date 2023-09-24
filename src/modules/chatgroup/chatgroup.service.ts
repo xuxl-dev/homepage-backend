@@ -33,6 +33,10 @@ export class ChatgroupService {
     return `This action removes a #${id} chatgroup`;
   }
 
+  findGroupsById(userId: number) {
+    throw new Error('Method not implemented.');
+  }
+
   async hasRoom(id: number) {
     try {
       return await this.chatgroupRepository.findOneOrFail({ where: { id } });

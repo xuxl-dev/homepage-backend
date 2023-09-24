@@ -11,6 +11,8 @@ import { QueryMessageDto } from '../offline-message/dto/queryMessage.dto';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { JoinRoomDto } from './dto/join-room.dto';
+import { UserService } from '../user/user.service';
+
 
 const logger = new Logger('SocketIoService')
 @Injectable()
@@ -20,6 +22,7 @@ export class SocketIoService {
     private readonly messageQueue: Queue,
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
+    private readonly userService: UserService,
     private readonly offlineMessageService: OfflineMessageService,
     private readonly roomManager: RoomManager,
     private readonly socketManager: SocketManager,
@@ -34,7 +37,8 @@ export class SocketIoService {
   }
 
   async retriveAndSync(data: RetriveMessageDto, clientId: number) {
-    const offlineMessages = await this.offlineMessageService.retrive(
+    // forward one to one messages to client
+    const toClientOfflineMessages = await this.offlineMessageService.retrive(
       clientId,
       data.afterDate,
       {
@@ -42,11 +46,31 @@ export class SocketIoService {
         pageSize: data.pageSize
       }
     )
-    for (const msg of offlineMessages) {
+    for (const msg of toClientOfflineMessages) {
       this.messageQueue.add('send', msg) // no wait
     }
+
+    // forward group messages to client
+    const groups = await (await this.userService.findOne(clientId)).joinedChatGroups
+
+    for (const group of groups) {
+      const toGroupMessages = await this.offlineMessageService.retrive(
+        group.id,
+        data.afterDate,
+        {
+          page: data.page,
+          pageSize: data.pageSize
+        }
+      )
+      for (const msg of toGroupMessages) {
+        // rewrite groupId to clientId
+        msg.receiverId = clientId
+        this.messageQueue.add('send', msg) 
+      }
+    }
+
     return {
-      messageCount: offlineMessages.length
+      tot: toClientOfflineMessages.length
     }
   }
 

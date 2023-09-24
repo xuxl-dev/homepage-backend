@@ -20,10 +20,6 @@ import { Message as Message } from '../internal-message/schemas/message.schema';
 export class OfflineMessageService {
 
   constructor(
-    // @InjectRepository(User)
-    // private readonly userRepository: Repository<User>,
-    // @InjectRepository(Message_old)
-    // private readonly messageRepository: Repository<Message_old>,
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>
   ) { }
@@ -35,10 +31,6 @@ export class OfflineMessageService {
    * (aka it's a latened offline message converted into online message,
    * but it fails again, then convert into offline message again)
    * */
-  // async sendMessageOrFail_old(message: Message) {
-  //   return await this.messageRepository.save(message)
-  // }
-
   async sendMessageOrFail(message: Message) {
     return await this.messageModel.create(message)
   }
@@ -48,19 +40,6 @@ export class OfflineMessageService {
    * if marked as not to delete, do not delete it)
    * @param userId 
    */
-  // async retrive_old(userId: number, afterDate?: Date, pagination?: { page: number, pageSize: number }) {
-  //   return await this.messageRepository.find(
-  //     {
-  //       where: {
-  //         receiverId: userId,
-  //         sentAt: MoreThanOrEqual(afterDate)
-  //       },
-  //       take: pagination?.pageSize,
-  //       skip: pagination?.page * pagination?.pageSize
-  //     }
-  //   )
-  // }
-
   async retrive(userId: number, afterDate?: Date, pagination?: { page: number, pageSize: number }) {
     return await this.messageModel.find(
       {
@@ -75,28 +54,10 @@ export class OfflineMessageService {
     )
   }
 
-  // async deleteBefore_old(date: Date) {
-  //   // 查询并删除过期消息
-  //   const expiredMessages = await this.messageRepository.createQueryBuilder()
-  //     .where('createdAt <= :date', { date })
-  //     .delete()
-  //     .execute();
-
-  //   return expiredMessages
-  // }
-
   async deleteBefore(date: Date) : Promise<number> {
     const expiredMessages = await this.messageModel.deleteMany({ createdAt: { $lte: date } })
     return expiredMessages.deletedCount
   }
-
-  // async findOne_old(id: string) {
-  //   try {
-  //     return await this.messageRepository.findOneOrFail({ where: { msgId: id } })
-  //   } catch (error) {
-  //     return null
-  //   }
-  // }
 
   /**
    * 
@@ -116,14 +77,6 @@ export class OfflineMessageService {
    * @param id 
    * @param receiverId not used, but for future use
    */
-  // async updateReadCount_old(id: string, receiverId: number) {
-  //   const msg = await this.findOne(id)
-  //   if (msg) {
-  //     msg.hasReadCount += 1
-  //     await this.messageRepository.save(msg)
-  //   }
-  // }
-
   async updateReadCount(id: string, receiverId: number) {
     const msg = await this.findOne(id)
     if (msg) {

@@ -39,7 +39,7 @@ export class RoomManager {
   /**
    * Map from room to socket ids
    */
-  private roomToSocketMap = new Map<Room, Set<string>>();
+  private roomToSocketMap = new Map<Room, Set<Socket>>();
 
   public createRoom(roomId: RoomId, name: string) {
     if (this.rooms.has(roomId)) {
@@ -47,7 +47,7 @@ export class RoomManager {
     }
     const room = new Room(roomId, name)
     this.rooms.set(roomId, room);
-    this.roomToSocketMap.set(room, new Set<string>());
+    this.roomToSocketMap.set(room, new Set<Socket>());
   }
 
   public getRoom(roomId: RoomId) {
@@ -56,8 +56,7 @@ export class RoomManager {
 
   public deleteRoom(roomId: RoomId) {
     // remove all sockets in this room
-    this.roomToSocketMap.get(this.getRoom(roomId)).forEach(socketId => {
-      const socket = this.io.sockets.sockets.get(socketId);
+    this.roomToSocketMap.get(this.getRoom(roomId)).forEach(socket => {
       if (socket) {
         socket.leave(this.getRoomName(roomId));
       }
@@ -67,11 +66,11 @@ export class RoomManager {
     this.rooms.delete(roomId);
   }
 
-  public joinRoom(roomId: number, socket: Socket) {
+  public joinRoom(roomId: RoomId, socket: Socket) {
     if (!this.rooms.has(roomId)) {
       throw new Error('room does not exist');
     }
-    this.roomToSocketMap.get(this.rooms.get(roomId)).add(socket.id);
+    this.roomToSocketMap.get(this.rooms.get(roomId)).add(socket);
     socket.join(this.getRoomName(roomId))
   }
 
@@ -79,7 +78,7 @@ export class RoomManager {
     if (!this.rooms.has(roomId)) {
       throw new Error('room does not exist');
     }
-    this.roomToSocketMap.get(this.rooms.get(roomId)).delete(socket.id);
+    this.roomToSocketMap.get(this.rooms.get(roomId)).delete(socket);
     socket.leave(this.getRoomName(roomId))
   }
 
