@@ -14,7 +14,6 @@ import { Message as Message, MsgId } from '../internal-message/schemas/message.s
 
 @Injectable()
 export class OfflineMessageService {
-
   constructor(
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>
@@ -51,8 +50,7 @@ export class OfflineMessageService {
   }
 
   /**
-   * 
-   * @param id auto generated mongoose _id
+   * @param id: Not mongo _id, but the message id
    * @returns 
    */
   async findOne(id: bigint) {
@@ -64,7 +62,6 @@ export class OfflineMessageService {
   }
 
   /**
-   * 
    * @param id 
    * @param receiverId not used, but for future use
    */

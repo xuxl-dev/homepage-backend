@@ -20,7 +20,7 @@ const logger = new Logger('SocketIoService')
 export class SocketIoService {
   constructor(
     @InjectQueue('message')
-    private readonly messageQueue: Queue,
+    private readonly messageQueue: Queue<Message>,
     private readonly authService: AuthService,
     private readonly chatGroupService: ChatgroupService,
     private readonly userService: UserService,
@@ -133,6 +133,5 @@ export class SocketIoService {
 
     // remove from db
     this.offlineMessageService.delete(messageId)
-    
   }
 }

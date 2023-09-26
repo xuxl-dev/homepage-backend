@@ -25,7 +25,6 @@ export enum ACKMsgType {
 
 export type MsgId = bigint
 
-
 export type MessageDocument = HydratedDocument<Message>;
 
 @Schema()

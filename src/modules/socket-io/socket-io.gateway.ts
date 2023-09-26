@@ -19,8 +19,9 @@ const logger = new Logger('SocketIoGateway')
 })
 export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   constructor(
+    @InjectQueue('message') 
+    private readonly messageQueue: Queue<Message>,
     private readonly socketIoService: SocketIoService,
-    @InjectQueue('message') private readonly messageQueue: Queue,
     private readonly dispatcher: Dispatcher, // only refered to bind Io server
   ) {}
 
