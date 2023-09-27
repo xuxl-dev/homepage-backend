@@ -32,6 +32,9 @@ export class Message {
   @Prop({
     required: true,
     unique: true,
+    type: String,
+    index: true,
+    transform: (v) => BigInt(v),
   })
   msgId: MsgId = snowflake.nextId()
 
