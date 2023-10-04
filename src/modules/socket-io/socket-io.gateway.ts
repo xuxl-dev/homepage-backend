@@ -46,7 +46,8 @@ export class SocketIoGateway
   }
 
   handleDisconnect(client: Socket) {
-    logger.debug(`user disconnected: `, client.user.id);
+    logger.debug(`user disconnected: `, client?.user?.id);
+    if (!client?.user?.id) return;
     this.socketIoService.removeSocket(client.user.id);
   }
 
