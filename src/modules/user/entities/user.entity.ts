@@ -20,9 +20,9 @@ export class User {
   @Column({ type: "varchar", length: 200 })
   username: string;
 
-  @Exclude()                // Exclude means this column will not be returned in the response
+  @Exclude()                 // Exclude means this column will not be returned in the response
   @Column({ select: false }) // select: false means this column will not be selected by default
-  password: string;         // when querying the database, aka. not returned in the response
+  password: string;          // when querying the database, aka. not returned in the response
 
   @Column({ nullable: true })
   email: string;

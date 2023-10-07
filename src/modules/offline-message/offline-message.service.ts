@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message as Message, MsgId } from '../internal-message/schemas/message.schema';
@@ -14,7 +13,6 @@ import { Message as Message, MsgId } from '../internal-message/schemas/message.s
 
 @Injectable()
 export class OfflineMessageService {
-
   constructor(
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>
@@ -40,7 +38,7 @@ export class OfflineMessageService {
     return await this.messageModel.find(
       {
         receiverId: userId,
-        sentAt: MoreThanOrEqual(afterDate)
+        sentAt: { $gte: afterDate }
       },
       null,
       {
@@ -51,11 +49,10 @@ export class OfflineMessageService {
   }
 
   /**
-   * 
-   * @param id auto generated mongoose _id
+   * @param id: Not mongo _id, but the message id
    * @returns 
    */
-  async findOne(id: bigint) {
+  async findOne(id: MsgId) {
     try {
       return await this.messageModel.findById(id)
     } catch (error) {
@@ -64,11 +61,10 @@ export class OfflineMessageService {
   }
 
   /**
-   * 
    * @param id 
    * @param receiverId not used, but for future use
    */
-  async updateReadCount(id: bigint, receiverId: number) {
+  async updateReadCount(id: MsgId, receiverId: number) {
     const msg = await this.findOne(id)
     if (msg) {
       msg.hasReadCount += 1
