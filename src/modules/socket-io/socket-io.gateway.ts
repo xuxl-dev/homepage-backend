@@ -31,6 +31,8 @@ export class SocketIoGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   handleDisconnect(client: Socket) {
+    if (!client.user) return
+    if (!client.user.id) return
     logger.debug(`user disconnected: `, client.user.id)
     this.socketIoService.removeSocket(client.user.id)
   }
