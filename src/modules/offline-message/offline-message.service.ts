@@ -52,7 +52,7 @@ export class OfflineMessageService {
    * @param id: Not mongo _id, but the message id
    * @returns 
    */
-  async findOne(id: bigint) {
+  async findOne(id: MsgId) {
     try {
       return await this.messageModel.findById(id)
     } catch (error) {
@@ -64,7 +64,7 @@ export class OfflineMessageService {
    * @param id 
    * @param receiverId not used, but for future use
    */
-  async updateReadCount(id: bigint, receiverId: number) {
+  async updateReadCount(id: MsgId, receiverId: number) {
     const msg = await this.findOne(id)
     if (msg) {
       msg.hasReadCount += 1

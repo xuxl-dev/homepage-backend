@@ -23,7 +23,7 @@ export enum ACKMsgType {
   'READ',
 }
 
-export type MsgId = bigint
+export type MsgId = string
 
 export type MessageDocument = HydratedDocument<Message>;
 
@@ -34,9 +34,9 @@ export class Message {
     unique: true,
     type: String,
     index: true,
-    transform: (v) => BigInt(v),
+    // transform: (v) => BigInt(v),
   })
-  msgId: MsgId = snowflake.nextId()
+  msgId: MsgId = snowflake.nextId().toString()
 
   @Prop({
     required: true,
@@ -66,6 +66,8 @@ export class Message {
   @Prop({ required: true })
   flag: number = MessageFlag.NONE
 
+  constructor() {}
+
   static ACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
     msg.flag = MessageFlag.ACK
@@ -81,9 +83,10 @@ export class Message {
   static new(createMessageDto: CreateMessageDto, senderId: number) {
     const msg = new Message()
     msg.receiverId = createMessageDto.receiverId
-    msg.content = createMessageDto.content
-    msg.flag = createMessageDto.flag
+    msg.content = createMessageDto.content || ''
+    msg.flag = msg.flag || createMessageDto.flag || MessageFlag.NONE //TODO: find out why default value is not working
     msg.senderId = senderId
+
     return msg
   }
 
@@ -119,4 +122,14 @@ export function parseACK(msg: Message) {
 
 export function isFlagSet(msg: Message, flag: MessageFlag) {
   return !!(msg.flag & flag)
+}
+
+
+export function serializeMsg(message: Message) {
+  return JSON.stringify(message, (key, value) => {
+    if (key === 'msgId') {
+      return value.toString()
+    }
+    return value
+  })
 }

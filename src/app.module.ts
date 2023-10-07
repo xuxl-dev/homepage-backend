@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import configGenerator from './config/config';
 import { RedisModule } from './modules/db/redis/redis.module';
 import { InternalMessageModule } from './modules/internal-message/internal-message.module';
@@ -41,9 +41,7 @@ import { MongooseModule } from '@nestjs/mongoose';
           username: config.get('DB_USERNAME'),
           password: config.get('DB_PASSWORD'),
           synchronize: config.get('DB_SYNC'),
-          entities: [
-            __dirname + '/**/*.entity{.ts,.js}'
-          ],
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
           // autoLoadEntities: true,
           timezone: '+08:00',
           cache: {
@@ -53,7 +51,7 @@ import { MongooseModule } from '@nestjs/mongoose';
               port: config.get('REDIS_PORT'),
               password: config.get('REDIS_PASSWORD'),
               db: config.get('REDIS_DB'),
-            }
+            },
           },
           // migrationsTableName: "migrations",
           // migrations: ["migrations/*.ts"],
