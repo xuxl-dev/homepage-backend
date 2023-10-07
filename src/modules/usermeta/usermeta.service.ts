@@ -1,32 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '../db/redis/redis.service';
 import { UserStatus } from './entities/usermeta.entity';
-
+const STATUS_EXPIRE = 60 * 60 * 2 //2h
+//TODO: set this to a lower value in production, and use heartbeat to update the status
 @Injectable()
 export class UsermetaService {
   prefix = 'usermeta_'
   constructor(
     private readonly redisService: RedisService,
-  ) {}
-
-  online(userId:number) {
-    return this.redisService.set(this.prefix + userId, UserStatus.ONLINE)
+  ) {
+    // on init, set all users to offline, delete all usermeta
+    this.redisService.keys(this.prefix + '*').then(keys => {
+      keys.forEach(key => {
+        this.redisService.del(key)
+      })
+    })
   }
 
-  offline(userId:number) {
-    return this.redisService.set(this.prefix + userId, UserStatus.OFFLINE)
+  async online(userId: number) {
+    return await this.redisService.setex(this.prefix + userId, STATUS_EXPIRE, UserStatus.ONLINE)
   }
 
-  setStatus(userId:number, status:UserStatus) {
-    return this.redisService.set(this.prefix + userId, status)
+  async offline(userId: number) {
+    return await this.redisService.setex(this.prefix + userId, STATUS_EXPIRE, UserStatus.OFFLINE)
   }
 
-  getStatus(userId:number) {
+  async setStatus(userId: number, status: UserStatus) {
+    return await this.redisService.set(this.prefix + userId, status)
+  }
+
+  async getStatusCode(userId: number) {
     try {
-      return +this.redisService.get(this.prefix + userId) as UserStatus
+      const status = await this.redisService.get(this.prefix + userId)
+      console.log(status)
+      if (!status) {
+        return UserStatus.UNKNOWN
+      }
+      return status
     } catch {
       return UserStatus.UNKNOWN
     }
   }
-
 }

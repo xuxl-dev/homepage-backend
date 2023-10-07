@@ -24,6 +24,7 @@ import {
   serializeMsg,
 } from '../internal-message/schemas/message.schema';
 import { JoinRoomDto } from './dto/join-room.dto';
+import { UsermetaService } from '../usermeta/usermeta.service';
 
 const logger = new Logger('SocketIoGateway');
 
@@ -38,6 +39,7 @@ export class SocketIoGateway
     private readonly messageQueue: Queue<Message>,
     private readonly socketIoService: SocketIoService,
     private readonly dispatcher: Dispatcher, // only refered to bind Io server
+    private readonly usermetaService : UsermetaService
   ) {}
 
   afterInit(server: Server) {
@@ -50,6 +52,7 @@ export class SocketIoGateway
     if (!client.user.id) return
     logger.debug(`user disconnected: `, client.user.id)
     this.socketIoService.removeSocket(client.user.id)
+    this.usermetaService.offline(client.user.id)
   }
 
   async handleConnection(socket: Socket) {
@@ -59,6 +62,7 @@ export class SocketIoGateway
       socket.user = user;
       this.socketIoService.addSocket(user.id, socket);
       logger.debug(`user connected: ${user.id}`);
+      this.usermetaService.online(user.id)
     } catch (e) {
       logger.debug(`invalid token: ${e}`);
       socket.emit('connected', 'invalid token');

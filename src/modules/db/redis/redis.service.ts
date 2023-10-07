@@ -60,7 +60,7 @@ export class RedisService implements OnModuleInit {
     return await this.do(e => e.set(key, value))
   }
 
-  async setex(key: string, seconds: number, value: string): Promise<string> {
+  async setex(key: string, seconds: number, value: string | number | Buffer): Promise<string> {
     return await this.do(e => e.setex(key, seconds, value))
   }
 

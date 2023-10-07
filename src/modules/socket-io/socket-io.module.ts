@@ -10,6 +10,7 @@ import { MessageQueue } from './message.consumer';
 import { RoomManager } from './room-manager';
 import { SocketManager } from './socket-mamager';
 import { UserModule } from '../user/user.module';
+import { UsermetaModule } from '../usermeta/usermeta.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserModule } from '../user/user.module';
       name: 'message',
     }),
     ChatgroupModule,
+    UsermetaModule,
   ],
   providers: [SocketIoGateway, SocketIoService, Dispatcher, MessageQueue, RoomManager, SocketManager],
   exports: [SocketIoService]
