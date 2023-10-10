@@ -7,7 +7,7 @@ import { UserStatus } from './entities/usermeta.entity';
 @Controller('usermeta')
 export class UsermetaController {
   constructor(private readonly usermetaService: UsermetaService) {}
-  @Roles(ROLES.USER)
+  // @Roles(ROLES.USER)
   @Post('status')
   async getStatus(@Body() body: { userId: number }) {
     const res = await this.usermetaService.getStatusCode(body.userId)

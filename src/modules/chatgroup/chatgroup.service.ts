@@ -4,6 +4,9 @@ import { UpdateChatgroupDto } from './dto/update-chatgroup.dto';
 import { Repository } from 'typeorm';
 import { ChatGroup } from './entities/chatgroup.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JoinChatGroupDto } from './dto/join-chatgroup.dto';
+import { UserService } from '../user/user.service';
+
 
 @Injectable()
 export class ChatgroupService {
@@ -11,37 +14,63 @@ export class ChatgroupService {
   constructor(
     @InjectRepository(ChatGroup)
     private readonly chatgroupRepository: Repository<ChatGroup>,
+    private readonly userService : UserService
   ) { }
 
-  create(createChatgroupDto: CreateChatgroupDto) {
-    return 'This action adds a new chatgroup';
+  async create(createChatgroupDto: CreateChatgroupDto) {
+    return await this.chatgroupRepository.save(createChatgroupDto);
   }
 
-  findAll() {
-    return `This action returns all chatgroup`;
+  async findAll() {
+    return await this.chatgroupRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chatgroup`;
+  async findMyGroups(userId: number) {
+    return await this.chatgroupRepository.createQueryBuilder('chatgroup')
+      .leftJoinAndSelect('chatgroup.members', 'members')
+      .where('members.id = :userId', { userId })
+      .getMany()
   }
 
-  update(id: number, updateChatgroupDto: UpdateChatgroupDto) {
-    return `This action updates a #${id} chatgroup`;
+  async findOne(id: number) {
+    return await this.chatgroupRepository.findOneOrFail({ where: { id } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} chatgroup`;
+  async update(id: number, updateChatgroupDto: UpdateChatgroupDto) {
+    return await this.chatgroupRepository.update(id, updateChatgroupDto);
   }
 
-  findGroupsById(userId: number) {
-    throw new Error('Method not implemented.');
+  async remove(id: number) {
+    return await this.chatgroupRepository.delete(id);
   }
 
-  async hasRoom(id: number) {
-    try {
-      return await this.chatgroupRepository.findOneOrFail({ where: { id } });
-    } catch (error) {
-      return false;
+  async join(joinChatGroupDto: JoinChatGroupDto) {
+    const { userId, groupId } = joinChatGroupDto
+    const group = await this.chatgroupRepository.findOneOrFail({ where: { id: groupId } })
+    const user = await this.userService.findOne(userId)
+    if (!group || !user) {
+      throw new Error('group or user not found')
     }
+    group.members.push(user)
+    return await this.chatgroupRepository.save(group) //this is cascade save
+  }
+
+  async isGroupAdmin(groupId: number, userId: number) {
+    const group = await this.chatgroupRepository.findOneOrFail({
+      where: { id: groupId },
+    });
+    return group.admins.some(admin => admin.id === userId);
+  }
+
+  async addGroupAdmin(groupId: number, userId: number) {
+    const group = await this.chatgroupRepository.findOneOrFail({
+      where: { id: groupId },
+    });
+    const user = await this.userService.findOne(userId)
+    if (!group || !user) {
+      throw new Error('group or user not found')
+    }
+    group.admins.push(user)
+    return await this.chatgroupRepository.save(group) //this is cascade save
   }
 }
