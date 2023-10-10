@@ -1,11 +1,11 @@
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BaseEntity, BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcryptjs';
 import { Exclude } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
 import { ChatGroup } from "src/modules/chatgroup/entities/chatgroup.entity";
 
 @Entity('user')
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
@@ -51,7 +51,7 @@ export class User {
   @Column('simple-enum', { enum: ['admin', 'user', 'visitor'] })
   role: string;
 
-  @OneToOne(() => Attr, { cascade: true })
+  @OneToOne(() => Attr, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn()
   attributes: Promise<Attr>;
 
@@ -68,7 +68,7 @@ export class User {
   @DeleteDateColumn()
   deleted_at: Date;
 
-  @ManyToMany(() => ChatGroup, chatgroup => chatgroup.members)
+  @ManyToMany(() => ChatGroup, chatgroup => chatgroup.members, { onDelete: 'CASCADE' })
   joinedChatGroups: Promise<ChatGroup[]>;
 
   /**
