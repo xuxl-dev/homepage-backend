@@ -86,10 +86,6 @@ export class SocketIoService {
     }
   }
 
-  createRoom(createSocketIoDto: CreateRoomDto) {
-    this.chatGroupService.create(createSocketIoDto);
-  }
-
   joinRoom(room: JoinRoomDto, socket: Socket) {
     this.roomManager.joinRoom(room.roomId, socket);
   }
