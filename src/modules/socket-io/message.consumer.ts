@@ -17,7 +17,7 @@ export class MessageQueue {
    */
   @Process('send')
   send(job: Job<Message>) {
-    console.debug('Message dispatched', job.data)
+    // console.debug('Message dispatched', job.data)
     try {
       this.dispatcher.dispatch(job.data)
       return Promise.resolve()
