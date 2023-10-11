@@ -21,7 +21,6 @@ import { Dispatcher } from './dispatcher';
 import {
   ACKMsgType,
   Message,
-  serializeMsg,
 } from '../internal-message/schemas/message.schema';
 import { JoinRoomDto } from './dto/join-room.dto';
 import { UsermetaService } from '../usermeta/usermeta.service';
@@ -84,7 +83,7 @@ export class SocketIoGateway
   ) {
     const msg = Message.new(data, client.user.id);
     await this.messageQueue.add('send', msg);
-    return Message.ACK(msg, ACKMsgType.DELIVERED);
+    return Message.ServerACK(msg, ACKMsgType.DELIVERED);
   }
 
   @SubscribeMessage('syncMessage')

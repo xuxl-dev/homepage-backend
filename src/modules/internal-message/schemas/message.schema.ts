@@ -68,15 +68,15 @@ export class Message {
 
   constructor() {}
 
-  static ACK(toMessage: Message, type: ACKMsgType) {
+  static ServerACK(toMessage: Message, type: ACKMsgType) {
     const msg = new Message()
     msg.flag = MessageFlag.ACK
     msg.content = {
-      ackMsgId: toMessage.msgId.toString(),
+      ackMsgId: toMessage.msgId,
       type,
     }
     msg.receiverId = toMessage.senderId
-    msg.senderId = toMessage.receiverId
+    msg.senderId = -1
     return msg
   }
 
