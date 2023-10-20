@@ -5,7 +5,6 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  WebSocketServer,
   OnGatewayInit,
 } from '@nestjs/websockets';
 import { SocketIoService } from './socket-io.service';

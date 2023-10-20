@@ -66,4 +66,10 @@ export class ChatgroupController {
     return this.chatgroupService.join(joinChatGroupDto);
   }
 
+  @UserRole()
+  @Get('members/:id')
+  getGroupMembers(@Param('id') id: string) {
+    return this.chatgroupService.getMembers(+id);
+  }
+
 }

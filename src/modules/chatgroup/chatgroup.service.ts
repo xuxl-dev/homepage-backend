@@ -73,4 +73,11 @@ export class ChatgroupService {
     group.admins.push(user)
     return await this.chatgroupRepository.save(group) //this is cascade save
   }
+
+  async getMembers(groupId: number) {
+    const group = await this.chatgroupRepository.findOneOrFail({
+      where: { id: groupId },
+    });
+    return group.members
+  }
 }
