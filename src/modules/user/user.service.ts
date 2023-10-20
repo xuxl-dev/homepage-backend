@@ -86,6 +86,12 @@ export class UserService {
     }
   }
 
+  async getAllUserBasicInfo() {
+    const users = await this.usersRepository.find({
+      select: ['id', 'username', 'role'],
+    });
+    return users;
+  }
 
   async testUser() {
     // add test users

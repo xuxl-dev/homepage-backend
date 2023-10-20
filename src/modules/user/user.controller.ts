@@ -48,6 +48,16 @@ export class UserController {
     return this.userService.findAll({});
   }
 
+  /**
+   * 
+   * @returns 
+   */
+  @Roles(ROLES.USER)
+  @Get()
+  getAllUser() {
+    return this.userService.getAllUserBasicInfo()
+  }
+
   @Roles(ROLES.USER)
   @Get(':id')
   findOne(@Param('id') id: string) {
