@@ -44,7 +44,9 @@ export class ChatgroupController {
     throw new Error('only admin can update group');
   }
 
-  @AdminRole()
+  // @AdminRole()
+  //TODO this is temporary, remove this
+  @UserRole()
   @Post('all')
   findAll() {
     return this.chatgroupService.findAll();
