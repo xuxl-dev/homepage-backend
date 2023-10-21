@@ -7,5 +7,5 @@ export class CreateChatgroupDto {
 
   @IsString()
   @MaxLength(512)
-  description: string;
+  desc: string;
 }
