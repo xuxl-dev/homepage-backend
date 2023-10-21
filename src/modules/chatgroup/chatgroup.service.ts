@@ -7,15 +7,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { JoinChatGroupDto } from './dto/join-chatgroup.dto';
 import { UserService } from '../user/user.service';
 
-
 @Injectable()
 export class ChatgroupService {
-
   constructor(
     @InjectRepository(ChatGroup)
     private readonly chatgroupRepository: Repository<ChatGroup>,
-    private readonly userService : UserService
-  ) { }
+    private readonly userService: UserService,
+  ) {}
 
   async create(createChatgroupDto: CreateChatgroupDto) {
     return await this.chatgroupRepository.save(createChatgroupDto);
@@ -26,10 +24,11 @@ export class ChatgroupService {
   }
 
   async findMyGroups(userId: number) {
-    return await this.chatgroupRepository.createQueryBuilder('chatgroup')
+    return await this.chatgroupRepository
+      .createQueryBuilder('chatgroup')
       .leftJoinAndSelect('chatgroup.members', 'members')
       .where('members.id = :userId', { userId })
-      .getMany()
+      .getMany();
   }
 
   async findOne(id: number) {
@@ -45,39 +44,42 @@ export class ChatgroupService {
   }
 
   async join(joinChatGroupDto: JoinChatGroupDto) {
-    const { userId, groupId } = joinChatGroupDto
-    const group = await this.chatgroupRepository.findOneOrFail({ where: { id: groupId } })
-    const user = await this.userService.findOne(userId)
+    const { userId, groupId } = joinChatGroupDto;
+    const group = await this.chatgroupRepository.findOneOrFail({
+      where: { id: groupId },
+      relations: ['members'],
+    });
+    const user = await this.userService.findOne(userId);
     if (!group || !user) {
-      throw new Error('group or user not found')
+      throw new Error('group or user not found');
     }
-    group.members.push(user)
-    return await this.chatgroupRepository.save(group) //this is cascade save
+    group.members.push(user);
+    return await this.chatgroupRepository.save(group); //this is cascade save
   }
 
   async isGroupAdmin(groupId: number, userId: number) {
     const group = await this.chatgroupRepository.findOneOrFail({
       where: { id: groupId },
     });
-    return group.admins.some(admin => admin.id === userId);
+    return group.admins.some((admin) => admin.id === userId);
   }
 
   async addGroupAdmin(groupId: number, userId: number) {
     const group = await this.chatgroupRepository.findOneOrFail({
       where: { id: groupId },
     });
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne(userId);
     if (!group || !user) {
-      throw new Error('group or user not found')
+      throw new Error('group or user not found');
     }
-    group.admins.push(user)
-    return await this.chatgroupRepository.save(group) //this is cascade save
+    group.admins.push(user);
+    return await this.chatgroupRepository.save(group); //this is cascade save
   }
 
   async getMembers(groupId: number) {
     const group = await this.chatgroupRepository.findOneOrFail({
       where: { id: groupId },
     });
-    return group.members
+    return group.members;
   }
 }
