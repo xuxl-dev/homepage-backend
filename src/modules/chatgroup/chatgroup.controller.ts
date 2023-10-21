@@ -3,8 +3,7 @@ import { ChatgroupService } from './chatgroup.service';
 import { CreateChatgroupDto } from './dto/create-chatgroup.dto';
 import { UpdateChatgroupDto } from './dto/update-chatgroup.dto';
 import { JoinChatGroupDto } from './dto/join-chatgroup.dto';
-import { AdminRole, Roles, UserRole } from '../auth/roles/roles.decorators';
-import { ROLES } from '../auth/roles/roles.constants';
+import { AdminRole, UserRole } from '../auth/roles/roles.decorators';
 import { IsAdmin, User } from '../common/decorator/decorators';
 import { User as UserType } from '../user/entities/user.entity';
 import { AddAdminDto } from './dto/add-admin-chatgroup.dto';
@@ -71,5 +70,4 @@ export class ChatgroupController {
   getGroupMembers(@Param('id') id: string) {
     return this.chatgroupService.getMembers(+id);
   }
-
 }
