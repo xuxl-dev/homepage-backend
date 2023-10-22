@@ -1,8 +1,9 @@
-import { BaseEntity, BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BaseEntity, BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcryptjs';
 import { Exclude } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
 import { ChatGroup } from "src/modules/chatgroup/entities/chatgroup.entity";
+
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -70,6 +71,10 @@ export class User extends BaseEntity {
 
   @ManyToMany(() => ChatGroup, chatgroup => chatgroup.members, { onDelete: 'CASCADE' })
   joinedChatGroups: Promise<ChatGroup[]>;
+
+  @ManyToMany(() => User, user => user.friends, { onDelete: 'CASCADE' })
+  @JoinTable()
+  friends: Promise<User[]>;
 
   /**
    * this is the public key of the user, used for e2e encryption
