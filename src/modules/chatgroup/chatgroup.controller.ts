@@ -51,6 +51,13 @@ export class ChatgroupController {
   findAll() {
     return this.chatgroupService.findAll();
   }
+
+  @UserRole()
+  @Get('my-groups')
+  getMyGroups(@User() user: UserType) {
+    // return this.chatgroupService.findMyGroups(user.id);
+    return user.joinedChatGroups
+  }
   
   @UserRole()
   @Post(':id')
