@@ -42,4 +42,9 @@ export class MediaController {
     console.log(file.filename);
     return this.mediaService.put(file, user);
   }
+
+  @Post(':filename')
+  getFile(@Param('filename') filename: string, @User() user) {
+    return this.mediaService.get(filename, user);
+  }
 }

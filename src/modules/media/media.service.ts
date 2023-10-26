@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
 import OSS from 'ali-oss';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../user/entities/user.entity';
+import { Repository } from 'typeorm';
+import { Media } from './entities/media.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class MediaService {
   constructor(
-    private readonly configService : ConfigService
+    private readonly configService : ConfigService,
+    @InjectRepository(Media)
+    private readonly mediaRepository: Repository<Media>
   ){}
 
   client = new OSS({
@@ -51,5 +56,18 @@ export class MediaService {
   async put(file: Express.Multer.File, user: User) {
     const filename = this.formatName(file, user)
     return await this.client.put(filename, file.buffer)
+  }
+
+  async get(filename: string, user: User) {
+    try {
+      this.mediaRepository.findOneOrFail({
+        where:{filename, }
+      })
+    } catch {
+      throw new UnauthorizedException()
+    }
+    
+
+    return await this.client.get(filename)
   }
 }

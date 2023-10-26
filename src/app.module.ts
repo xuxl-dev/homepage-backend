@@ -26,6 +26,7 @@ import { BullModule } from '@nestjs/bull';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MediaModule } from './modules/media/media.module';
+import { ChatsessModule } from './modules/chatsess/chatsess.module';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { MediaModule } from './modules/media/media.module';
     EventEmitterModule.forRoot(),
     MongooseModule.forRoot('mongodb://localhost:27017/'),
     MediaModule,
+    ChatsessModule,
   ],
   controllers: [AppController],
   providers: [AppService],
