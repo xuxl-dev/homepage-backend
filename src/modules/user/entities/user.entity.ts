@@ -1,8 +1,10 @@
-import { BaseEntity, BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BaseEntity, BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcryptjs';
 import { Exclude } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
 import { ChatGroup } from "src/modules/chatgroup/entities/chatgroup.entity";
+import { Media } from "src/modules/media/entities/media.entity";
+import { Chatsess } from "src/modules/chatsess/entities/chatsess.entity";
 
 
 @Entity('user')
@@ -82,8 +84,17 @@ export class User extends BaseEntity {
    * he should encrypt the message with this public key
    */
   @Column('text', { nullable: true })
-  public_key: string;
+  public_key: Promise<string>;
 
+  @OneToMany(() => Media, media => media.createdBy, { onDelete: 'CASCADE' })
+  medias: Promise<Media[]>
+
+  @ManyToMany(() => Media, media => media.visibleTo, { onDelete: 'CASCADE' })
+  @JoinTable()
+  accessTokens: Promise<Media[]>
+
+  @ManyToMany(() => Chatsess, chatsess => chatsess.members, { onDelete: 'CASCADE' })
+  chatSessions: Promise<Chatsess[]>
 
   @BeforeInsert()
   async encryptPwd() {
