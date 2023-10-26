@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { Socket, io } from 'socket.io-client';
+import { messageToken } from "src/modules/socket-io/Tokens";
 
 export class MessageHelper extends EventEmitter {
   server_addr: string
@@ -43,7 +44,7 @@ export class MessageHelper extends EventEmitter {
   }
 
   async message(msg: object) {
-    this._socket?.emit('message', msg)
+    this._socket?.emit(messageToken, msg)
   }
 
   subscribe(channel: string, callback: (msg: object) => void | PromiseLike<void>) {

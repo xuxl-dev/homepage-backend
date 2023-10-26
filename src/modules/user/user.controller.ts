@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -6,22 +18,29 @@ import { Roles } from '../auth/roles/roles.decorators';
 import { noGuard, authedGuard } from '../auth/guards/guards.guard';
 import { User } from '../common/decorator/decorators';
 import { ROLES } from '../../modules/auth/roles/roles.constants';
-
+import { User as UserType } from './entities/user.entity';
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get()
   hello() {
     return 'hello';
   }
 
+  @Roles(ROLES.USER)
+  @Post('friends')
+  async findFriends(@User() user: UserType) {
+    // console.log('user');
+    //TODO change this to onlt ids to reduce payload
+    return await user.friends
+  }
+
   @Get('testuser')
   async testUser() {
     return await this.userService.testUser();
   }
-
 
   @noGuard()
   @Post('register')
@@ -49,26 +68,32 @@ export class UserController {
   }
 
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   @Roles(ROLES.USER)
   @Get()
   getAllUser() {
-    return this.userService.getAllUserBasicInfo()
+    return this.userService.getAllUserBasicInfo();
   }
 
   @Roles(ROLES.USER)
   @Get(':id')
   findOne(@Param('id') id: string) {
+    console.log('findOne', id);
     return this.userService.findOne(+id);
   }
 
-
+  
 
   @Roles(ROLES.USER)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @User() user) {
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @User() user,
+  ) {
+
     // if user is admin
     // if user is not admin, he can only update himself
     if (user.role in [ROLES.ADMIN, ROLES.SA] || user.id === +id) {
@@ -81,8 +106,4 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
-
-
-
-
 }

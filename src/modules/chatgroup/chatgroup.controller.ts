@@ -51,10 +51,18 @@ export class ChatgroupController {
   findAll() {
     return this.chatgroupService.findAll();
   }
+
+  @UserRole()
+  @Post('my-groups')
+  getMyGroups(@User() user: UserType) {
+    // console.log(`user:`, user.id)
+    return user.joinedChatGroups //TODO  check if this works
+  }
   
   @UserRole()
   @Post(':id')
   findGroup(@Param('id') id: string) {
+    console.log(`id:`, id)
     //TODO check if group is private
     return this.chatgroupService.findOne(+id);
   }

@@ -1,1 +1,1 @@
-export const messageToken = 'message';
+export const messageToken = 'msg';

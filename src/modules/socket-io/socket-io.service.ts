@@ -106,11 +106,22 @@ export class SocketIoService {
     return await this.authService.getUserByToken(this.getJwtTokenFromSocket(socket));
   }
 
-  addSocket(id: number, socket: Socket) {
+  async addSocket(id: number, socket: Socket) {
     // if already exist, disconnect the old one
     const oldSocket = this.socketManager.getSocket(id)
     if (oldSocket) {
       oldSocket.disconnect()
+    }
+    // connect this socket to rooms that this user joined
+    // Note: this won't cause duplicated join, socket.io will handle this
+    // even a user went offline and online again, this won't cause duplicated join, and he's auto reconnected to all rooms
+    const user = socket.user
+    if (user) {
+      const groups = await user.joinedChatGroups
+      for (const group of groups) {
+        socket.join(`group:${group.id}`)
+        console.log(`user ${user.id} joined group ${group.id}`)
+      }
     }
     this.socketManager.set(id, socket)
   }

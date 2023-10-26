@@ -58,7 +58,7 @@ export class SocketIoGateway
       const user = await this.socketIoService.getUserFromSocket(socket);
       socket.emit('connected', user);
       socket.user = user;
-      this.socketIoService.addSocket(user.id, socket);
+      await this.socketIoService.addSocket(user.id, socket);
       logger.debug(`user connected: ${user.id}`);
       this.usermetaService.online(user.id)
     } catch (e) {
